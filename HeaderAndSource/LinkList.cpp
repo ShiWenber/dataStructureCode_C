@@ -1,19 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
-
-typedef int ElemType;
-//用LNode类型表示结点，LinkList类型表示头指针/表头
-typedef struct LNode{
-    ElemType data;
-    struct LNode * next;
-}LNode,* LinkList;
-
-int CreateListFromHead (LinkList & LinkList , int n);
-int CreateListFromTail (LinkList & LinkList , int n);
-int ListInsert(LinkList & LinkList , int i , ElemType e);
-int ListDelete(LinkList & LinkList , int i);
-int GetElem(LinkList LinkList , int i , ElemType & e);
-int DisplayList (LinkList L);
+#ifndef __LINKLIST_H__
+#include "LinkList.h"
+#endif
 
 //线性链表的基本操作实现
 
@@ -113,21 +102,21 @@ int GetElem(LinkList L , int i, ElemType & e){
 }
 
 
-// 测试用主函数
-int main(){
-    LinkList head;
-    LinkList head2;
-    CreateListFromHead(head,5);
-    DisplayList(head);
-    CreateListFromTail(head2 , 6);
-    DisplayList(head2);
-    ListInsert(head , 2 , 6 );
-    DisplayList(head);
-    ListDelete(head , 2);
-    DisplayList(head);
-    ElemType e;
-    GetElem(head , 3 , e);
-    printf("%d\n",e);
-    DisplayList(head);
-    return 0;
-}
+// // 测试用主函数
+// int main(){
+//     LinkList head;
+//     LinkList head2;
+//     CreateListFromHead(head,5);
+//     DisplayList(head);
+//     CreateListFromTail(head2 , 6);
+//     DisplayList(head2);
+//     ListInsert(head , 2 , 6 );
+//     DisplayList(head);
+//     ListDelete(head , 2);
+//     DisplayList(head);
+//     ElemType e;
+//     GetElem(head , 3 , e);
+//     printf("%d\n",e);
+//     DisplayList(head);
+//     return 0;
+// }
