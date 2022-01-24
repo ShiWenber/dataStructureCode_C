@@ -5,11 +5,13 @@ typedef int ElemType;
 typedef struct{
     ElemType * base;//空间基址，栈底
     ElemType * top; // 栈顶
-    int stacksize;
+    int stacksize; //表示栈具有的空间长度
 }SqStack;
 
+int InitSqStack(SqStack & S,int n);
+
 //初始化一个最多能存n个数据元素的栈
-int initSqStack(SqStack & S , int n){
+int InitSqStack(SqStack & S , int n){
     S.base = (ElemType *)malloc(n*sizeof(ElemType));
     //分配空间失败
     if(!S.base){
@@ -67,7 +69,7 @@ int DisplaySqStack(SqStack S){
 
 int main(){
     SqStack S;
-    initSqStack(S,4);
+    InitSqStack(S,4);
     Push(S , 1);
     Push(S,2);
     Push(S,3);
