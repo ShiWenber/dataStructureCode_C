@@ -32,8 +32,15 @@ int CreateUndinetwork(SqGraph &G);
 int LocateInVertexs(SqGraph G, VertexType v);
 // 压缩矩阵（对称）
 int CompressSyMatrix(ArcCell *Matrix);
-int LocateIn(int i, int j);
-int BubbleSort(VertexType *vertexs);
+int LocateInMatrix(int i, int j, int n);
+// 冒泡排序
+int BubbleSort(VertexType *a, int len);
+// 二分查找
+int BinarySearch(VertexType *vertexs, VertexType v);
+int DisplayArcs(SqGraph G);
+
+
+
 
 int CreateSqGraph(SqGraph &G, int vertexNum){
     G.arcNum = 0;
@@ -42,7 +49,7 @@ int CreateSqGraph(SqGraph &G, int vertexNum){
     for(int i = 0; i < G.vertexNum; i++){
         scanf("%d",&G.vertexs[i]);
     }
-    // BubbleSort(G.vertexs); // 对顶点表排序
+    BubbleSort(G.vertexs, G.vertexNum); // 对顶点表排序, 如果顶点不是int类型，需要写比较器
     G.arcs = (ArcCell *)malloc(sizeof(ArcCell) * G.vertexNum * G.vertexNum);
     for(int i = 0; i < G.vertexNum * G.vertexNum; i++){
         G.arcs[i] = {INFINITY, 0};
@@ -125,21 +132,23 @@ int CreateDinetwork(SqGraph &G){
     }
     return 1;
 }
-// 哨兵位置静态查找法
 int LocateInVertexs(SqGraph G, VertexType v){
-    int result = 0;
-    G.vertexs[G.vertexNum] = v;
-    for(int i = 0; ; i++){
-        if(G.vertexs[i] == v){
-            result = i;
-            break;
-        }
-    }
-    if(result == G.vertexNum){
-        return 0;
-    }else{
-        return result;
-    }
+    // 加哨兵位置的静态顺序查找法
+
+    // int result = 0;
+    // G.vertexs[G.vertexNum] = v;
+    // for(int i = 0; ; i++){
+    //     if(G.vertexs[i] == v){
+    //         result = i;
+    //         break;
+    //     }
+    // }
+    // if(result == G.vertexNum){
+    //     return 0;
+    // }else{
+    //     return result;
+    // }
+    return BinarySearch(G.vertexs, v);
 }
 // 压缩对称阵
 int CompressSyMatrix(SqGraph &G){
@@ -153,11 +162,15 @@ int CompressSyMatrix(SqGraph &G){
     int k = 0;
     for(int i = 0; i < vertexNum; i++){
         for(int j = 0; j < i + 1; i++){
-            CompressedMatrix[k++] = Matrix[LocateInCompressedSyMatrix(i,j)];
+            CompressedMatrix[k++] = Matrix[LocateInMatrix(i, j, G.vertexNum)];
         }
     }
     G.arcs = CompressedMatrix;
     return 1;
+}
+// 在压缩前的邻接矩阵中求相对地址
+int LocateInMatrix(int i, int j, int n){
+    return n * i + 1 * j;
 }
 
 int LocateInCompressedSyMatrix(int i, int j){
@@ -170,17 +183,109 @@ int LocateInCompressedSyMatrix(int i, int j){
     }
 }
 
+int BubbleSort(VertexType *a, int len){
+    int temp;
+    if(len <= 0)
+        return 0;
+    for (int i = 0; i < len - 1; i++)
+    {
+        for (int j = 0; j < len - i - 1; j++)
+        {
+            if(a[j] > a[j + 1]){
+                temp = a[j];
+                a[j] = a[j+1];
+                a[j+1] = temp;
+                // for (int k = 0; k < len; k++)
+                // {
+                //     printf("%d ",a[k]);
+                // }
+                // printf("\n");
+            }
+        }
+        // for (int k = 0; k < len; k++)
+        // {
+        //     printf("-%d ",a[k]);
+        // }
+        // printf("\n");
+    }
+    return 1;
+}
 
+int BinarySearch(VertexType *vertexs, int len, VertexType target){
+    int left = 0, right = len - 1;
+    int mid = 0;
+    while(left < right){
+        mid = (left + right) / 2;
+        if(vertexs[mid] == target){
+            return mid;
+        }else if(vertexs[mid] < target){
+            left = mid + 1;
+        }else{
+            right = mid - 1;
+        }
+    }
+    if(left == right && vertexs[left] == target){
+        return left;
+    }else{
+        printf("%d not found\n", target);
+        return -1;
+    }
+}
 
+int Traverse(SqGraph G){
+    int *visited = (int *)malloc(sizeof(int)*G.vertexNum);
+    for(int i = 0; i < G.vertexNum; i++){
+        visited[i] = 0;
+    }
+    //初始化
+    for(int i = 0; i < G.vertexNum; i++){
+        if(visited[i] == 0){
+            DeepFirstTraverse(G, G.vertexs[i], visited);
+        }
+    }
+}
 
+int DeepFirstSearch(SqGraph G,  int *visited, VertexType start){
+    visited[LocateInVertexs(G, start)] = 1;
+    for()
 
+}
 
+int SqGraphEmpty(SqGraph G){
+    if(G.vertexNum == 0){
+        printf("Graph is empty\n");
+        return 1;
+    }else{
+        return 0;
+    }
+}
 
-
-
-
-
-
+int DisplayArcs(SqGraph G){
+    if(SqGraphEmpty(G)){
+        return 0;
+    }
+    switch (G.kind)
+    {
+    case Undinetwork:
+        for(int i = 0; i < G.vertexNum; i++){
+            for(int j = 0; j < G.vertexNum; j++){
+                printf("%d", G.arcs[LocateInCompressedSyMatrix(i, j)].weight);
+            }
+            printf("\n");
+        }
+    
+        break;
+    
+    default:
+        break;
+    }
+    if(G.kind == Undinetwork){
+        
+    }
+    for(int i = 0; i < G.vertexNum * G.vertexNum; i++){
+        printf("%d ", G.arcs[i].adjecent);
+    }
+}
 
 
 
