@@ -16,7 +16,7 @@ int InitQueue(SqQueue &Q, int maxsize);
 int SqQueueEmpty(SqQueue Q);
 int SqQueueFull(SqQueue Q);
 int EnSqQueue(SqQueue &Q, ElemType e);
-int OutSqQueue(SqQueue &Q, ElemType &e);
+int DeSqQueue(SqQueue &Q, ElemType &e);
 int SqQueueLength(SqQueue Q);
 int Display(SqQueue Q);
 
@@ -57,15 +57,15 @@ int main(){
     Display(Q);
     printf("%d\n",SqQueueLength(Q));
     ElemType e;
-    OutSqQueue(Q,e);
+    DeSqQueue(Q,e);
     printf("%d\n",e);
-    OutSqQueue(Q,e);
+    DeSqQueue(Q,e);
     printf("%d\n",e);
-    OutSqQueue(Q,e);
+    DeSqQueue(Q,e);
     printf("%d\n",e);
-    OutSqQueue(Q,e);
+    DeSqQueue(Q,e);
     printf("%d\n",e);
-    OutSqQueue(Q,e);
+    DeSqQueue(Q,e);
     printf("%d\n",e);
     Display(Q);
     printf("%d\n", e);
@@ -113,7 +113,7 @@ int EnSqQueue(SqQueue &Q, ElemType e){
     return 1;
 }
 
-int OutSqQueue(SqQueue &Q, ElemType &e){
+int DeSqQueue(SqQueue &Q, ElemType &e){
     if(SqQueueEmpty(Q)){
         return 0;
     }
@@ -165,7 +165,7 @@ int OutSqQueue(SqQueue &Q, ElemType &e){
 //     return 1;
 // }
 
-// int OutSqQueue(SqQueue &Q, ElemType &e){
+// int DeSqQueue(SqQueue &Q, ElemType &e){
 //     if(SqQueueEmpty(Q)){
 //         return 0;
 //     }
