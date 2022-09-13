@@ -182,7 +182,7 @@ int DisplayArray(Array A){
     }
     for(int i = 0; i < A.elemtotal; i++){
         printf("%d\t", *(A.base+i)); // A.base[i]
-        if(i % A.bounds[A.dim - 1] == 3){
+        if(i % A.bounds[A.dim - 1] == A.bounds[A.dim - 1] - 1){
             printf("\n");
         }
     }
@@ -201,6 +201,22 @@ int AssignAll(Array & A, ElemType e){
 }
 
 
+// 从一位数组中删除元素的方法， 需要dim个参数，分别表示每个维度的下标
+int DeleteElem(ElemType &e, Array &A, ...){
+    va_list ap;
+    va_start(ap, A);
+    int reAddress;
+    if(Locate(A, ap, reAddress)){
+        for(int i = reAddress + 1; i < A.elemtotal; i++){
+            A.base[i - 1] = A.base[i];
+        }
+        A.elemtotal--;
+    }else{
+        return 0;
+    }
+    return 1;
+}
+
 int main(){
     Array A;
     InitArray(A, 2, 3, 4); // 初始化一个二维3*4的数组
@@ -213,6 +229,19 @@ int main(){
     AssignAll(A, 0); // 给A中所有元素赋值e
     DisplayArray(A);
     DestroyArray(A);
+    // ---------------
+    Array A2;
+    InitArray(A2, 1, 5); // 初始化一个一维数组,长度为5
+    DisplayArray(A2);
+    Assign(A2, 2, 0); // 给A2[0]赋值2
+    ElemType e2;
+    Value(A2, e2, 0); // 获取A2[0]的值
+    printf("%d\n", e2);
+    DisplayArray(A2);
+    AssignAll(A2, 2); // 给A2中所有元素赋值2
+    DisplayArray(A2);
+    DeleteElem(e2, A2, 0); // 删除A2[0]
+    DisplayArray(A2); 
     return 0;
 }
 

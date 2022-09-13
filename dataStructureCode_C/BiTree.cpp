@@ -91,18 +91,18 @@ int DestroyBiTree(BiTree &T){
     return 0;
 }
 
-int main(){
-    BiTree MT;
-    CreateBiTree(MT);
-    if(!isBiTreeEmpty(MT)){
-        PreOrderTraverse(MT);
-        printf("\n");
-        InOrderTraverse(MT);
-        printf("\n");
-        PostOrderTraverse(MT);
-        printf("\n");
-    }
-    DestroyBiTree(MT);
-    PreOrderTraverse(MT);
-    return 0;
-}
+// int main(){
+//     BiTree MT;
+//     CreateBiTree(MT);
+//     if(!isBiTreeEmpty(MT)){
+//         PreOrderTraverse(MT);
+//         printf("\n");
+//         InOrderTraverse(MT);
+//         printf("\n");
+//         PostOrderTraverse(MT);
+//         printf("\n");
+//     }
+//     DestroyBiTree(MT);
+//     PreOrderTraverse(MT);
+//     return 0;
+// }
