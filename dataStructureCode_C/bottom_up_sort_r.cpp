@@ -59,6 +59,7 @@ inline int merge(double *a, int low1, int high1, int high2, int size, double *te
       temp[k++] = a[s++];
     }
   }
+  /**将存储在temp临时变量中的值赋值回a中*/
   while (low1 <= high2)
   {
     a[low1] = temp[low1];
@@ -93,7 +94,7 @@ int up_bottom_sort_r(double *arr, int l, int r, double *temp)
   /**划分*/
   up_bottom_sort_r(arr, l, l + len / 2 - 1, temp);
   up_bottom_sort_r(arr, l + len / 2, r, temp);
-  /**治理*/
+  /**治理，需要将两个子问题的结果统一为父问题的结果，这里用了指针数组，每次递归都是对该全局空间做修改的，所以传入merge的arr自然携带了上面求出的子问题的解*/
   merge(arr, l, l + len / 2 - 1, r, len, temp);
   return 0;
 }
