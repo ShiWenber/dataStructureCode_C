@@ -1,6 +1,6 @@
 # dataStructureCode_C
 
-教科书上一些基本数据结构的C代码
+教科书上一些基本数据结构的C代码以及蓝桥杯和leetcode的练习代码
 
 这些基本数据结构的代码实现放在dataStructureCode_C文件夹里
 
