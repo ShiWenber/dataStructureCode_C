@@ -60,11 +60,11 @@ public class TabuColoring {
 
 		int iter = 1; // 迭代次数
 		int max_iter = 10000; // 最大迭代次数
-		int randIdx = 1200; // 禁忌表中随机选择的禁忌次数
+		int randIdx = 1000; // 禁忌表中随机选择的禁忌次数
 		// 注意一个iter才更新一次sol，且只有比sol_best好的才更新sol_best
-		while (conflict > 0  && iter < max_iter) {
+		while (conflict > 0 && iter < max_iter) {
 			System.out.println("conflict: " + conflict);
-			// 输出轮数
+			// // 输出轮数
 			System.out.print("---------iter: ");
 			System.out.println(iter);
 			// choose a best move (v, c_i, c_j) from non-tabu moves
@@ -84,13 +84,16 @@ public class TabuColoring {
 				for (int j = 1; j < nbColor + 1; j++) {
 					// 如果非禁忌的移动没有score为正的，就从禁忌的移动中选择最先找到的一个能score为正的移动
 					if (tabuTable[i][j] >= iter && moveScore[i][j] > 0) {
-						int conflictDelta = move(sol, i, sol[i], j);
+
+						int conflictDelta = -moveScore[i][j];
+						assert (sol[i] == j);
 						// System.out.print("conflict: ");
 						// System.out.println(calConflict(sol));
 						tabuTable[i][j] = iter + conflict + randInt(randIdx);
 						if (conflictDelta < 0) {
+							move(sol, i, sol[i], j);
 							sol_best = sol.clone();
-							// assert calConflict(sol)== conflict + conflictDelta;
+							assert (calConflict(sol) == conflict + conflictDelta);
 							conflict += conflictDelta;
 						}
 						// printTabu(tabuTable);
@@ -117,15 +120,15 @@ public class TabuColoring {
 			}
 			// 不存在非禁忌的移动，找到一个最优的移动
 			if (flag == 1) {
-				int conflictDelta = move(sol, bestMove_v, sol[bestMove_v], bestMoveColor_j);
+				int conflictDelta = - moveScore[bestMove_v][bestMoveColor_j];
+				move(sol, bestMove_v, sol[bestMove_v], bestMoveColor_j);
+				assert (sol[bestMove_v] == bestMoveColor_j);
 				// System.out.print("conlict: ");
 				// System.out.println(calConflict(sol));
 				tabuTable[bestMove_v][bestMoveColor_j] = iter + conflict + randInt(randIdx);
-				if (conflictDelta < 0) {
-					sol_best = sol.clone();
-					// assert calConflict(sol)== conflict + conflictDelta;
-					conflict += conflictDelta;
-				}
+				sol_best = sol.clone();
+				assert (calConflict(sol) == conflict + conflictDelta);
+				conflict += conflictDelta;
 				// printTabu(tabuTable);
 				// printMoveScore(moveScore);
 				iter++;
@@ -139,37 +142,40 @@ public class TabuColoring {
 			// printMoveScore(tabuTable);
 			// }
 		}
-		if (conflict == 1) {
-			printMoveScore(moveScore);
-			printMoveScore(tabuTable);
-			// 通过输入暂时阻塞在此处
-			Scanner sc = new Scanner(System.in);
-			sc.nextLine();
-			System.out.println("conflict: " + conflict);	
-		}
+		// if (conflict == 1) {
+		// printMoveScore(moveScore);
+		// printMoveScore(tabuTable);
+		// // 通过输入暂时阻塞在此处
+		// Scanner sc = new Scanner(System.in);
+		// sc.nextLine();
+		// System.out.println("conflict: " + conflict);
+		// }
+		// System.out.println(iter);
+		// System.out.println(calConflict(sol_best));
+		assert (calConflict(sol_best) == 0);
 		return sol_best;
 	}
 
 	private void printTabu(int[][] tabuTable) {
 		for (int i = 1; i < G.verNum + 1; i++) {
 			for (int j = 1; j < nbColor + 1; j++) {
-				// System.out.print(tabuTable[i][j]);
-				// System.out.print(",");
+				System.out.print(tabuTable[i][j]);
+				System.out.print(",");
 			}
-			// System.out.println("");
+			System.out.println("");
 		}
-		// System.out.println("---------------------");
+		System.out.println("---------------------");
 	}
 
 	private void printMoveScore(int[][] moveScore) {
 		for (int i = 1; i < G.verNum + 1; i++) {
 			for (int j = 1; j < nbColor + 1; j++) {
-				// System.out.print(moveScore[i][j]);
-				// System.out.print(",");
+				System.out.print(moveScore[i][j]);
+				System.out.print(",");
 			}
-			// System.out.println();
+			System.out.println();
 		}
-		// System.out.println("---------------------");
+		System.out.println("---------------------");
 	}
 
 	/**
@@ -199,7 +205,9 @@ public class TabuColoring {
 				}
 			}
 		}
-		return res;
+		assert (res % 2 == 0);
+		// 冲突边会重复计算，因此要除以2
+		return res / 2;
 	}
 
 	/**
@@ -227,19 +235,6 @@ public class TabuColoring {
 				moveScore[i][color] = conflict_neighbor_origin - conflict_neighbor_new;
 			}
 		}
-		// 用csv文件保存moveScore
-		try {
-			FileWriter fw = new FileWriter("moveScore.csv");
-			for (int i = 1; i < G.verNum + 1; i++) {
-				for (int color = 1; color < nbColor + 1; color++) {
-					fw.write(moveScore[i][color] + ",");
-				}
-				fw.write("\n");
-			}
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -251,38 +246,57 @@ public class TabuColoring {
 	 * @param c_j 顶点改变后的颜色
 	 * @return 返回冲突数的变化
 	 */
-	public int move(int[] sol, int v, int c_i, int c_j) {
+	public void move(int[] sol, int v, int c_i, int c_j) {
 		// 更新范围：v和v的邻居
 		// 更新邻居的moveScore
-		int conflictDelta = -moveScore[v][c_j];
-		ArrayList<Integer> neighbors = G.getNeighbors(v);
-		for (int u : neighbors) {
-			moveScore[u][c_i]++; // 对邻居来说，原来的颜色冲突数-1因为score表示冲突变化的负值
-			moveScore[u][c_j]--; // 对邻居来说，新的颜色冲突数+1因为score表示冲突变化的负值
-		}
-		int conflict_neighbor_new = 0;
-		int conflict_neighbor_origin = 0;
-		// 更新v的moveScore
-		for (int c = 1; c < nbColor + 1; c++) {
-			conflict_neighbor_new = 0;
-			conflict_neighbor_origin = 0;
-			if (c == c_j) {
-				moveScore[v][c] = 0;
-				continue;
-			}
-			for (int u : neighbors) {
-				if (c_j == sol[u]) {
-					conflict_neighbor_origin++;
-				}
-				if (c == sol[u]) {
-					conflict_neighbor_new++;
-				}
-			}
-			moveScore[v][c] = conflict_neighbor_origin - conflict_neighbor_new;
-
-		}
-
 		sol[v] = c_j;
-		return conflictDelta;
+
+		// int conflict_neighbor_new = 0;
+		// int conflict_neighbor_origin = 0;
+
+		// ArrayList<Integer> neighbors = G.getNeighbors(v);
+		// for (int u : neighbors) {
+		// 	for (int c = 1; c < nbColor + 1; c++) {
+		// 		conflict_neighbor_new = 0;
+		// 		conflict_neighbor_origin = 0;
+		// 		if (c == sol[u]) {
+		// 			moveScore[u][c] = 0;
+		// 			continue;
+		// 		}
+		// 		for (int w : neighbors) {
+		// 			// 现在对邻居的颜色冲突数
+		// 			if (sol[u] == sol[w]) {
+		// 				conflict_neighbor_origin++;
+		// 			}
+		// 			// 如果变化为c，对邻居的颜色冲突数
+		// 			if (c == sol[w]) {
+		// 				conflict_neighbor_new++;
+		// 			}
+		// 		}
+		// 		moveScore[u][c] = conflict_neighbor_origin - conflict_neighbor_new;
+		// 	}
+		// }
+		// // 更新v的moveScore
+		// for (int c = 1; c < nbColor + 1; c++) {
+		// 	conflict_neighbor_new = 0;
+		// 	conflict_neighbor_origin = 0;
+		// 	if (c == c_j) {
+		// 		moveScore[v][c] = 0;
+		// 		continue;
+		// 	}
+		// 	for (int u : neighbors) {
+		// 		// 现在对邻居的颜色冲突数
+		// 		if (c_j == sol[u]) {
+		// 			conflict_neighbor_origin++;
+		// 		}
+		// 		// 如果变化为c，对邻居的颜色冲突数
+		// 		if (c == sol[u]) {
+		// 			conflict_neighbor_new++;
+		// 		}
+		// 	}
+		// 	moveScore[v][c] = conflict_neighbor_origin - conflict_neighbor_new;
+		// }
+
+		calMoveScore(sol); // 暴力法保证准确率，但是不如上面的方法快 TODO 上面的方法错误
 	}
 }

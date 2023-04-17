@@ -10,7 +10,6 @@ import java.util.*;
 import java.io.*;
 
 public class GraphColoring {
-
 	public static void main(String[] args) {
 		Graph G = readDimacsInstance(args[0]);// 读取图文件
 		int nbColor = Integer.parseInt(args[1]);// 颜色数
@@ -114,6 +113,11 @@ class Graph {
 			for (int neibor : this.adjList.get(v)) {
 				assert (sol[neibor] >= 1 && sol[neibor] <= nbColor);
 				if (sol[neibor] == color) {
+					// 输出冲突的边
+					System.out.printf("conflict edge: (%d, %d), color: %d\n", v, neibor, color);
+					// 输出sol
+					System.out.print("solution: ");
+					// System.out.println(Arrays.toString(sol));
 					System.out.println("failed!");
 					return;
 				}
