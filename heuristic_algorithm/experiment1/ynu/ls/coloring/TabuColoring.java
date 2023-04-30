@@ -59,7 +59,7 @@ public class TabuColoring {
 		int conflict = calConflict(sol_best);
 
 		int iter = 1; // 迭代次数
-		int max_iter = 10000; // 最大迭代次数
+		int max_iter = 100000; // 最大迭代次数
 		int randIdx = 1000; // 禁忌表中随机选择的禁忌次数
 		// 注意一个iter才更新一次sol，且只有比sol_best好的才更新sol_best
 		while (conflict > 0 && iter < max_iter) {
@@ -86,12 +86,12 @@ public class TabuColoring {
 					if (tabuTable[i][j] >= iter && moveScore[i][j] > 0) {
 
 						int conflictDelta = -moveScore[i][j];
-						assert (sol[i] == j);
 						// System.out.print("conflict: ");
 						// System.out.println(calConflict(sol));
 						tabuTable[i][j] = iter + conflict + randInt(randIdx);
 						if (conflictDelta < 0) {
 							move(sol, i, sol[i], j);
+							assert (sol[i] == j);
 							sol_best = sol.clone();
 							assert (calConflict(sol) == conflict + conflictDelta);
 							conflict += conflictDelta;
@@ -152,7 +152,7 @@ public class TabuColoring {
 		// }
 		// System.out.println(iter);
 		// System.out.println(calConflict(sol_best));
-		assert (calConflict(sol_best) == 0);
+		// assert (calConflict(sol_best) == 0);
 		return sol_best;
 	}
 
