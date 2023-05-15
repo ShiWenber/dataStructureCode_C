@@ -121,5 +121,3 @@ class Graph{
 		return String.format("Graph with %d vertices %d edges\n", this.verNum,this.edgeNum);
 	}
 }
-
-

@@ -1,6 +1,7 @@
 package ynu.ls.coloring;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -73,12 +74,77 @@ public class SimaColoring {
         int random_moveScore = Integer.MIN_VALUE;
         int conflictDelta = 0;
         int tt = 0;
+        int maxScore = Integer.MIN_VALUE;
+
+        List<Integer> bestPoint = new ArrayList<Integer>();
+
+        List<Integer> bestColor = new ArrayList<Integer>();
+
+        List<Integer> bestvetrx = new ArrayList<Integer>();
+
+
+
         while (T > end_T && this.conflict > 0) {
-            for (int i = 0; i < iter; i++, iter_count++) {
-                tt = iter_count + (int) (1 / T) + randInt(20);
-                // 产生一个随机解
+            // 查找候选解
+            for (int i = 0; i < adj_score.length; i++) {
+                // 若当前点已经无冲突
+                if (adj_score[i][sol[i]] == 0) {
+                    continue;
+                }
+
+                for (int i1 = 0; i1 < adj_score[i].length; i1++) {
+
+                    if (sol[i] == i1) {
+                        continue;
+                    } else {
+                        int currentScore = adj_score[i][sol[i]] - adj_score[i][i1];
+
+                        // 维护分数表，并寻找最高分数，并将最高分数的点bestPoint.add(i);
+
+                        if (currentScore == maxScore && tabuTable[i][i1] < iter) {
+                            bestPoint.add(i);
+                            bestColor.add(i1);
+                        }
+
+                        if (currentScore > maxScore) {
+
+                            double p = Math.random();
+                            if (conflict_local - currentScore < this.conflict) {
+                                tabuTable[random_v][random_c_j] = iter;
+                                maxScore = currentScore;
+
+                                bestPoint.clear();
+                                bestColor.clear();
+
+                                bestPoint.add(i);
+                                bestColor.add(i1);
+
+                            }
+
+                            else if (conflict_local - currentScore >= this.conflict && tabuTable[i][i1] < iter) {
+                                maxScore = currentScore;
+
+                                bestPoint.clear();
+                                bestColor.clear();
+
+                                bestPoint.add(i);
+                                bestColor.add(i1);
+                            }
+
+                            else if (p < Math.exp((currentScore) / T)) {
+                                bestvetrx.add(i);
+
+                            }
+
+                        }
+                    }
+                }
+
+
+
                 // // 产生一个随机值在[1, G.verNum]之间的整数
-                random_v = randInt(G.verNum) + 1;
+                random_v = bestPoint.get(Math.random());
+                random_c_j = bestColor.get(Math.random());
                 assert (random_v >= 1 && random_v <= G.verNum);
                 // random_c_i = randInt(nbColor) + 1;
                 // assert (random_c_i >= 1 && random_c_i <= nbColor);
@@ -97,8 +163,8 @@ public class SimaColoring {
                     }
                 }
 
-                // 若当前点已经无冲突则概率接受差解
-                if (adj_score[random_v][sol[random_v]] == 0) {
+                // 若当前点已经无冲突或者当前解分数为负数则概率接受差解
+                if ((adj_score[random_v][sol[random_v]] == 0)) {
                     if (Math.random() >= Math.exp(-conflictDelta / T)) {
                         continue;
                     }
@@ -139,7 +205,6 @@ public class SimaColoring {
                     // System.out.println(this.conflict);
                 }
             }
-
             T *= alpha;
         }
 
