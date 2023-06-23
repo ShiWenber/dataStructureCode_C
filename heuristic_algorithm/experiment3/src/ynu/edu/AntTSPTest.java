@@ -23,6 +23,10 @@ public class AntTSPTest {
 //        protected double init_pheromone = 100; // 初始信息素浓度 10, 100, 步长10
 //        int[] antNums = {30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170,
 //        		180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280};
+
+
+
+        buildDistMatrix("a280.tsp");
         int[] antNums = {30, 40, 50};
         int[] maxIters = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
         double[] qs = {10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
@@ -56,7 +60,7 @@ public class AntTSPTest {
             System.out.println();
             // 对结构进行测试
 
-            buildDistMatrix("a280.tsp");
+
             double bestValue = getTourLength(bestTour); // 计算路径总长度
             int[] optTour = getOptTour("a280.opt.tour"); // 读取已知的最优解
             double optValue = getTourLength(optTour); // 最优解的路径总长度
