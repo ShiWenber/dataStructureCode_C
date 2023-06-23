@@ -11,6 +11,9 @@ public class AntTSPTest {
 
     public static void main(String[] args) {
 
+        // 设置随机种子
+        Random rand = new Random(1234);
+
         AntTSP antTSP = new AntTSP("a280.tsp");
 
         int[] bestTour = antTSP.solve(); // 返回蚁群算法计算的最佳路径
