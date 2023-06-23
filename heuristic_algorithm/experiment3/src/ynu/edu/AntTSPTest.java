@@ -52,7 +52,7 @@ public class AntTSPTest {
             System.out.println("\n--------------------");
             System.out.println(id + "/" + test_times + " antNum: " + antNum + ", maxIter: " + maxIter + ", q: " + q + ", rho: " + rho + ", a: " + a + ", b: " + b + ", initPheromone: " + initPheromone);
 
-            AntTSP antTSP = new AntTSP("a280.tsp");
+            AntTSP antTSP = new AntTSP("a280.tsp", antNum, maxIter, q, rho, k, a, b, initPheromone);
 
             int[] bestTour = antTSP.solve(); // 返回蚁群算法计算的最佳路径
 
