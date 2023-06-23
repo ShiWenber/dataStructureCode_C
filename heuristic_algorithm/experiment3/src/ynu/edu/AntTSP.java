@@ -43,7 +43,21 @@ public class AntTSP {
     protected double init_pheromone = 100; // 初始信息素浓度
 
 
-    public AntTSP(String filename) {
+    public AntTSP(String filename, int antNum, int maxIter, double q, double rho, int k, double a, double b,
+            double init_pheromone) {
+        this.antNum = antNum;
+        this.maxIter = maxIter;
+        this.q = q;
+        this.rho = rho;
+        this.k = k;
+        this.a = a;
+        this.b = b;
+        this.init_pheromone = init_pheromone;
+
+
+
+
+
         // TODO: initialize nbCities, distMatrix, and cities from the TSP instance file
         // buildDistMatrix(this.distMatrix, filename);
         Scanner fin;

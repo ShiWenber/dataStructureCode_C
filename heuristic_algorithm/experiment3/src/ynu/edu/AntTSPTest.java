@@ -36,7 +36,7 @@ public class AntTSPTest {
         double[] bs = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
         double[] initPheromones = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 
-        int test_times = 100;
+        int test_times = 400;
 
         for (int id = 0; id < test_times; id++) {
 
@@ -51,7 +51,7 @@ public class AntTSPTest {
             System.out.println("\n--------------------");
             System.out.println(id + "/" + test_times + " antNum: " + antNum + ", maxIter: " + maxIter + ", q: " + q + ", rho: " + rho + ", a: " + a + ", b: " + b + ", initPheromone: " + initPheromone);
 
-            AntTSP antTSP = new AntTSP("a280.tsp");
+            AntTSP antTSP = new AntTSP("a280.tsp", antNum, maxIter, q, rho, k, a, b, initPheromone);
 
             int[] bestTour = antTSP.solve(); // 返回蚁群算法计算的最佳路径
 
