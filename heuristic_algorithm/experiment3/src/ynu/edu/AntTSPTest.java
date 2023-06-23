@@ -26,17 +26,18 @@ public class AntTSPTest {
 
 
 
+        // 设置随机数种子
         buildDistMatrix("a280.tsp");
-        int[] antNums = {30, 40, 50};
+        int[] antNums = {10,40,70,100, 130, 160, 190, 210, 240, 270, 280, 290, 300};
         int[] maxIters = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
         double[] qs = {10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
         double[] rhos = {0.2, 0.5, 0.8};
-        int k = 50;
+        int k = 100;
         double[] as = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
         double[] bs = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
         double[] initPheromones = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 
-        int test_times = 100;
+        int test_times = 1000;
 
         for (int id = 0; id < test_times; id++) {
 
