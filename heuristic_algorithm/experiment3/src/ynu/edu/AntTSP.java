@@ -31,7 +31,7 @@ public class AntTSP {
     protected Ant bestAnt; // 最优解
 
     // 超参部分
-    protected int antNum = 100; // 蚂蚁数量
+    protected int antNum = 280; // 蚂蚁数量
     protected int maxIter = 500; // 最大迭代次数
     protected double q = 10; // 信息素增加强度
     protected double rho = 0.8; // 信息素挥发系数
