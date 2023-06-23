@@ -30,11 +30,13 @@ public class AntTSP {
     protected ArrayList<Ant> ants = new ArrayList<Ant>(); // 从0开始 第 i 个蚂蚁的路径为 ants.get(i - 1).tour
     protected Ant bestAnt; // 最优解
 
+    protected Ant tempBestAnt; // 临时最优解
+
     // 超参部分
-    protected int antNum = 100; // 蚂蚁数量
-    protected int maxIter = 500; // 最大迭代次数
+    protected int antNum = 50; // 蚂蚁数量
+    protected int maxIter = 100; // 最大迭代次数
     protected double q = 10; // 信息素增加强度
-    protected double rho = 0.8; // 信息素挥发系数
+    protected double rho = 0.4; // 信息素挥发系数
     protected int k = 100; // k 次相同的解则停止迭代
     protected double a = 1; // 信息素重要程度
     protected double b = 5; // 启发函数重要程度
@@ -146,8 +148,9 @@ public class AntTSP {
 
 //        this.bestAnt = this.ants.get(0);
 
-//        this.bestAnt = new Ant(this.nbCities);
         this.bestAnt = new Ant(this.ants.get(0));
+        // 这里 bestAnt 的 getPathLength 为 0
+        this.tempBestAnt = this.ants.get(0);
 
         int count = 1;
         double best_length = Double.MAX_VALUE; // 记录最优解的长度
@@ -196,49 +199,50 @@ public class AntTSP {
             antStream.parallel().forEach(ant -> {
 //            for (Ant ant : this.ants) {
 //                assert ant.visitedCityIds.size() == nbCities : ant_id + "ant.visitedCityIds.size()" + ant.visitedCityIds.size() + "nbCities" + nbCities;
-                if (bestAnt.getPathLength() == 0 && ant.getPathLength() != 0) {
-                    bestAnt = ant;
+                if (this.tempBestAnt.getPathLength() == 0 && ant.getPathLength() != 0) {
+                    this.tempBestAnt = ant;
                 }
-                if (ant.getPathLength() < bestAnt.getPathLength() && ant.getPathLength() != 0) {
-                    bestAnt = ant;
+                if (ant.getPathLength() < this.tempBestAnt.getPathLength() && ant.getPathLength() != 0) {
+                    this.tempBestAnt = ant;
                 }
 //            }
             });
 
-            assert bestAnt != null;
-            assert bestAnt.getTour().length == nbCities + 1: "bestAnt.getTour().length" + bestAnt.getTour().length + "nbCities" + nbCities;
+            assert tempBestAnt != null;
+            assert tempBestAnt.getTour().length == nbCities + 1 : "bestAnt.getTour().length" + tempBestAnt.getTour().length + "nbCities" + nbCities;
             // 记录结束时间
             long endTime = System.currentTimeMillis();
 
 
             // 中间过程
             System.out.println(count + "time: " + (endTime - startTime) + "ms");
-            System.out.println(count + "bestPathLength: " + bestAnt.getPathLength());
+            System.out.println(count + "bestPathLength: " + tempBestAnt.getPathLength());
 
             // 更新信息素浓度矩阵;
             updatePheromone();
 
 
             // ⑷判断是否达到停止条件，若达到则输出最优解，否则返回⑵;
-            if (bestAnt.getPathLength() < best_length) {
-                best_length = bestAnt.getPathLength();
+            // 如果100次迭代后，最优解没有变化，就认为已经收敛
+            if (bestAnt.getPathLength() > this.tempBestAnt.getPathLength() || this.bestAnt.getPathLength() == 0) {
+                best_length = tempBestAnt.getPathLength();
                 best_count = 0;
-                this.bestAnt = new Ant(bestAnt);
-            } else if (bestAnt.getPathLength() == best_length) {
+                this.bestAnt = new Ant(this.tempBestAnt);
+            } else if (bestAnt.getPathLength() == this.tempBestAnt.getPathLength()) {
                 best_count++;
             }
 
             // k 次相同的最优解，表明已经收敛
             if (best_count >= this.k) {
                 //                输出总时间
-                System.out.println("total time: " + (System.currentTimeMillis() - whole_startTime)/1000 + "s");
+                System.out.println("total time: " + (System.currentTimeMillis() - whole_startTime) / 1000 + "s");
                 // 输出最优解
                 return bestAnt.getTour();
             }
 
 
             try {
-                logger.log(count, bestAnt.getPathLength(), endTime - startTime);
+                logger.log(count, this.tempBestAnt.getPathLength(), endTime - startTime);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -380,6 +384,7 @@ public class AntTSP {
             this.nextCityProbabilities = new double[ant.nextCityProbabilities.length];
             System.arraycopy(ant.nextCityProbabilities, 0, this.nextCityProbabilities, 0, ant.nextCityProbabilities.length);
         }
+
         public void reset(int startCityId) {
             this.currentCityId = startCityId;
             this.pathLength = 0.0;
@@ -413,7 +418,7 @@ public class AntTSP {
                     if (this.nextCityProbabilities[i] == 0.0) {
                         this.nextCityProbabilities[i] = 1e-7;
                     }
-                    assert  this.nextCityProbabilities[i] > 0.0: "nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
+                    assert this.nextCityProbabilities[i] > 0.0 : "nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
                             "pheromones: " + Arrays.toString(pheromones[currentCityId]) + "\n" +
                             "currentCityId: " + currentCityId + "\n" +
                             "visitedCityIds: " + visitedCityIds.size() + "\n";
@@ -426,7 +431,7 @@ public class AntTSP {
 //            if (total == 0 && visitedCityIds.size() == nbCities) {
 //                return;
 //            }
-            assert total != 0.0:"nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
+            assert total != 0.0 : "nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
                     "pheromones: " + Arrays.toString(pheromones[currentCityId]) + "\n" +
                     "currentCityId: " + currentCityId + "\n" +
                     "visitedCityIds: " + visitedCityIds.size() + "\n";
@@ -544,7 +549,7 @@ public class AntTSP {
             // 获得最后一行的信息素浓度
             deltaPheromones[visitedCityIds.size() - 1][0] = visitedCityIds.get(visitedCityIds.size() - 1);
             deltaPheromones[visitedCityIds.size() - 1][1] = visitedCityIds.get(0);
-            deltaPheromones[visitedCityIds.size() - 1][2] = AntTSP.this.q  / pathLength;
+            deltaPheromones[visitedCityIds.size() - 1][2] = AntTSP.this.q / pathLength;
             return deltaPheromones;
         }
 
