@@ -26,6 +26,7 @@ public class AntTSPTest {
 
 
 
+        // 设置随机数种子
         buildDistMatrix("a280.tsp");
         int[] antNums = {30, 40, 50};
         int[] maxIters = {150};
