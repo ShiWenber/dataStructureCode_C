@@ -33,10 +33,10 @@ public class AntTSP {
     protected Ant tempBestAnt; // 临时最优解
 
     // 超参部分
-    protected int antNum = 50; // 蚂蚁数量
-    protected int maxIter = 100; // 最大迭代次数
+    protected int antNum = 30; // 蚂蚁数量
+    protected int maxIter = 300; // 最大迭代次数
     protected double q = 10; // 信息素增加强度
-    protected double rho = 0.4; // 信息素挥发系数
+    protected double rho = 0.2; // 信息素挥发系数
     protected int k = 100; // k 次相同的解则停止迭代
     protected double a = 1; // 信息素重要程度
     protected double b = 5; // 启发函数重要程度
@@ -215,8 +215,8 @@ public class AntTSP {
 
 
             // 中间过程
-            System.out.println(count + "time: " + (endTime - startTime) + "ms");
-            System.out.println(count + "bestPathLength: " + tempBestAnt.getPathLength());
+//            System.out.println(count + "time: " + (endTime - startTime) + "ms");
+//            System.out.println(count + "bestPathLength: " + tempBestAnt.getPathLength());
 
             // 更新信息素浓度矩阵;
             updatePheromone();
