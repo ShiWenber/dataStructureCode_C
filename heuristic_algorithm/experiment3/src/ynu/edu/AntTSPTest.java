@@ -28,13 +28,15 @@ public class AntTSPTest {
 
         buildDistMatrix("a280.tsp");
         int[] antNums = {30, 40, 50};
-        int[] maxIters = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-        double[] qs = {10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-        double[] rhos = {0.2, 0.5, 0.8};
+        int[] maxIters = {150};
+        double[] qs = {10, 100, 200, 300, 400, 500, 600, 700, 800};
+        double[] rhos = {0.2,0.3,0.4, 0.5,0.6,0.7,0.8};
         int k = 50;
-        double[] as = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
-        double[] bs = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
+        double[] as = {1, 2, 3, 4, 5};
+        double[] bs = {1, 2, 3, 4, 5};
         double[] initPheromones = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+
+
 
         int test_times = 400;
 
@@ -71,6 +73,11 @@ public class AntTSPTest {
                 System.out.println("The gap is " + gap + ", passed!"); // 通过当与最优解的距离小于10%
             else
                 System.out.println("The gap is " + gap + ", failed!");
+
+//            如果gap大于0.5，剔除该参数组合
+            if (gap >= 0.5) {
+
+            }
 
         }
 
