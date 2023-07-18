@@ -56,3 +56,35 @@ $$
 java中数组是一个引用，因此可以对其做直接的修改，也能保证共享信息全局更新
 
 opt: 2586.7696475631606
+
+
+
+
+
+参数同最短路径的关系
+
+![log_data_ana](README.assets/log_data_ana.png)
+
+在小于5000的部分
+
+![log_data_ana-5000](README.assets/log_data_ana-5000.png)
+
+在小于3200的部分
+
+![log_data_ana-3200](README.assets/log_data_ana-3200.png)
+
+antNum
+
+![image-20230624102134597](README.assets/image-20230624102134597.png)
+
+a,b and tourlength
+
+![image-20230624105407072](README.assets/image-20230624105407072.png)
+
+a,b and tourlength <3200
+
+![image-20230624110109354](README.assets/image-20230624110109354.png)
+
+initP
+
+![log_data_ana-initP](README.assets/log_data_ana-initP.png)

@@ -32,24 +32,44 @@ public class AntTSPTest {
         int[] maxIters = {150};
         double[] qs = {10, 100, 200, 300, 400, 500, 600, 700, 800};
         double[] rhos = {0.2,0.3,0.4, 0.5,0.6,0.7,0.8};
-        int k = 50;
+        int k = 200;
         double[] as = {1, 2, 3, 4, 5};
         double[] bs = {1, 2, 3, 4, 5};
         double[] initPheromones = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 
 
 
-        int test_times = 400;
+        int test_times = 10;
 
         for (int id = 0; id < test_times; id++) {
 
-            int antNum = antNums[(int) (Math.random() * antNums.length)];
-            int maxIter = maxIters[(int) (Math.random() * maxIters.length)];
-            double q = qs[(int) (Math.random() * qs.length)];
-            double rho = rhos[(int) (Math.random() * rhos.length)];
-            double a = as[(int) (Math.random() * as.length)];
-            double b = bs[(int) (Math.random() * bs.length)];
-            double initPheromone = initPheromones[(int) (Math.random() * initPheromones.length)];
+            // int antNum = antNums[(int) (Math.random() * antNums.length)];
+            // int maxIter = maxIters[(int) (Math.random() * maxIters.length)];
+            // double q = qs[(int) (Math.random() * qs.length)];
+            // double rho = rhos[(int) (Math.random() * rhos.length)];
+            // double a = as[(int) (Math.random() * as.length)];
+            // double b = bs[(int) (Math.random() * bs.length)];
+            // double initPheromone = initPheromones[(int) (Math.random() * initPheromones.length)];
+
+//             {'antNum': '280',
+//    'maxIter': '500',
+//    'q': '10.0',
+//    'rho': '0.4',
+//    'k': '100',
+//    'a': '1.0',
+//    'b': '5.0',
+//    'initP': '100.0'}
+            int antNum = 280;
+            int maxIter = 200;
+            double q = 700;
+            double rho = 0.8;
+            double a = 2.5;
+            double b = 2.0;
+            double initPheromone = 40.0;
+            // int k = 100;
+
+
+
 
             System.out.println("\n--------------------");
             System.out.println(id + "/" + test_times + " antNum: " + antNum + ", maxIter: " + maxIter + ", q: " + q + ", rho: " + rho + ", a: " + a + ", b: " + b + ", initPheromone: " + initPheromone);
