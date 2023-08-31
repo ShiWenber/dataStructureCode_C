@@ -147,7 +147,7 @@ int Value(Array A, ElemType & e, ...){
     va_list ap;
     va_start(ap, e);
     int reAddress;
-    int resuilt;
+    int result;
     if(Locate(A, ap, reAddress)){
         e = *(A.base+reAddress); // e = A.base[reAddress];
         va_end(ap);

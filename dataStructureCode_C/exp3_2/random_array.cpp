@@ -12,7 +12,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
-
+#include "random_array.h"
 
 using namespace std;
 
@@ -21,24 +21,27 @@ void random_array(double*a, int n)
   srand((unsigned)time(NULL));
   for (int i = 0; i < n; i++)
   {
-    a[i] = rand();
+    /**生成从-5000到4999的随机数*/
+    a[i] = rand() % 10000 - 5000;
   }
 }
 
+
 // int main()
 // {
-//   int a[10000];
+//   double a[10000];
 //   random_array(a, 10000);
 //   /** 显示最大值和最小值 */
 //   int max = a[0], min = a[0];
 //   for (int i = 0; i < 10000; i++)
 //   {
+//     cout << a[i] << " ";
 //     if (a[i] > max)
 //       max = a[i];
 //     if (a[i] < min)
 //       min = a[i];
 //   }
-
+//   cout << endl;
 //   cout << "max = " << max << endl;
 //   cout << "min = " << min << endl;
 //   return 0;

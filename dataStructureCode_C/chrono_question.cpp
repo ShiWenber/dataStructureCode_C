@@ -16,8 +16,12 @@
 
 using namespace std;
 using namespace chrono;
-
-
+/**
+ * @brief 递归实现的汉诺塔 
+ * 
+ * @param layer 汉诺塔层数 
+ * @return int 移动次数
+ */
 int hanoi_r(int layer) {
   if (layer <= 0) {
     cout << "layer must be greater than 0" << endl;
@@ -30,6 +34,12 @@ int hanoi_r(int layer) {
   return 2 * hanoi_r(layer - 1) + 1;
 }
 
+/**
+ * @brief 非递归实现的汉诺塔，根据汉诺塔移动次数的递推公式计算得2^n-1
+ * 
+ * @param layer 汉诺塔层数
+ * @return int 移动次数
+ */
 int hanoi(int layer) {
   if (layer <= 0) {
     cout << "layer must be greater than 0" << endl;
