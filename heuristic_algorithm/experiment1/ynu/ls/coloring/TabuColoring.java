@@ -1,7 +1,5 @@
 package ynu.ls.coloring;
 
-import ynu.ls.coloring.Graph;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.SimpleFileVisitor;
@@ -38,14 +36,13 @@ public class TabuColoring {
 
 	public TabuColoring(Graph G, int nbColor) {
 		this.G = G;
-		this.nbColor = 52;
-		this.tabuTable = new int[G.verNum + 1][this.nbColor + 1];
-		this.moveScore = new int[G.verNum + 1][this.nbColor + 1]; // moveScore[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
-		this.moveScore2 = new int[G.verNum + 1][this.nbColor + 1]; // moveScore2[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
+		this.nbColor = nbColor;
+		this.tabuTable = new int[G.verNum + 1][nbColor + 1];
+		this.moveScore = new int[G.verNum + 1][nbColor + 1]; // moveScore[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
+		this.moveScore2 = new int[G.verNum + 1][nbColor + 1]; // moveScore2[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
 		this.best_sol = new int[G.verNum + 1];
 		this.adj_score = new int[G.verNum + 1][this.nbColor + 1];
 		this.iter = 1;
-		this.max_iter = 300000;
 		IntStream.range(1, G.verNum + 1).parallel().forEach(i -> {
 			// 产生从1~nbColor的随机数
 			best_sol[i] = (int) (Math.random() * this.nbColor) + 1;
@@ -76,7 +73,7 @@ public class TabuColoring {
 
 		// 并行加速
 		CompletableFuture<Void> task1 = CompletableFuture.runAsync(() -> calAdjScore(best_sol));
-		// CompletableFuture<Void> task2 = CompletableFuture.runAsync(() -> calMoveScore(best_sol, moveScore));
+		CompletableFuture<Void> task2 = CompletableFuture.runAsync(() -> calMoveScore(best_sol, moveScore));
 		CompletableFuture<Integer> task3 = CompletableFuture.supplyAsync(() -> calConflict(best_sol));
 
 		CompletableFuture<Void> allTasks = CompletableFuture.allOf(task1, task3);
@@ -98,26 +95,19 @@ public class TabuColoring {
 	 * @return
 	 */
 	public int[] search() {
-		// // // 遍历conflict_edges
-		// if (conflict_edges != null) {
-		// 	for (int i = 0; i < conflict_edges.length; i++) {
-		// 		// 冲突边有重复只需要随机改变一个顶点的颜色即可
-		// 		best_sol[conflict_edges[i][0]] = (int) (Math.random() * nbColor) + 1;
-		// 		// best_sol[conflict_edges[i][1]] = (int) (Math.random() * nbColor) + 1;
-		// 	}
-		// }
 		// 开始记时
 		long startTime = System.currentTimeMillis();
-		// 初始化随机解
+
+		// // 初始化随机解
 		// for (int i = 1; i < G.verNum + 1; i++) {
 		// // 产生从1~nbColor的随机数
 		// best_sol[i] = (int) (Math.random() * nbColor) + 1;
 		// }
+
 		// 随机挑选5%的节点，随机改变颜色
 		Random random = new Random();
 		Set<Integer> set = new HashSet<>();
-		// while (set.size() < G.verNum * (this.max_iter - this.iter) / (double)(this.max_iter)) {
-		while (set.size() < G.verNum * 1.0/this.iter) {
+		while (set.size() < G.verNum * 0.05) {
 			set.add(random.nextInt(G.verNum) + 1);
 		}
 		int[] idx = set.stream().mapToInt(Integer::valueOf).toArray();
@@ -147,10 +137,11 @@ public class TabuColoring {
 
 		// 并行加速
 		CompletableFuture<Void> task1 = CompletableFuture.runAsync(() -> calAdjScore(best_sol));
-		CompletableFuture<Void> task2 = CompletableFuture.runAsync(() -> calMoveScore(best_sol, moveScore));
+		// CompletableFuture<Void> task2 = CompletableFuture.runAsync(() ->
+		// calMoveScore(best_sol, moveScore));
 		CompletableFuture<Integer> task3 = CompletableFuture.supplyAsync(() -> calConflict(best_sol));
 
-		CompletableFuture<Void> allTasks = CompletableFuture.allOf(task1, task2, task3);
+		CompletableFuture<Void> allTasks = CompletableFuture.allOf(task1, task3);
 		allTasks.join();
 
 		this.conflict = 0;
@@ -165,19 +156,16 @@ public class TabuColoring {
 		// assert (conflict == conflict2);
 
 		this.iter = 1; // 迭代次数
-		this.max_iter = 300000; // 最大迭代次数
+		int max_iter = 60000; // 最大迭代次数
 		// int randIdx = 500; // 禁忌表中随机选择的禁忌次数
-		int randIdx = 50;
-		int sm_randIdx = 100; // 禁忌表中随机选择的禁忌次数
+		int randIdx = 4000;
+		int sm_randIdx = 1000; // 禁忌表中随机选择的禁忌次数
 		// 注意一个iter才更新一次sol，且只有比sol_best好的才更新sol_best
 		// int x = 5;
 		int x = randInt(10);
 
 		while (conflict > 0 && iter < max_iter) {
-			// int tt = iter + conflict * x + randInt(sm_randIdx);
-			// int tt = iter + (int) (1.0 / conflict * randInt(randIdx)) + randInt(sm_randIdx);
-			int tt = iter + conflict + randInt(sm_randIdx);
-
+			int tt = iter + conflict * x + randInt(randIdx);
 			// int tt = iter + (int) (1.0 / conflict * randIdx * 10) + randInt(sm_randIdx);
 			// int tt2 = iter + conflict * 10 + randInt(randIdx);
 			System.out.println("conflict: " + conflict);
@@ -210,94 +198,47 @@ public class TabuColoring {
 			// 获取movescore 的最大值，以及最大值的位置
 
 			// int max_score = ; // 一次iter 中最大的move-score
-			// for (int i = start; i < G.verNum + 1; i += step) {
-			// for (int j = start; j < nbColor + 1; j += step) {
-			// // 记录所有的分数，找出最大的分数
-			// if ((moveScore[i][j] > maxMoveScore) || (moveScore[i][j] == maxMoveScore &&
-			// randInt(10) > 5)) {
-			// maxMoveScore = moveScore[i][j];
-			// bestMove_v = i;
-			// bestMoveColor_j = j;
-			// flag = 1;
-			// }
-			// if ((moveScore[i][j] > maxMoveScore_nonTabu && tabuTable[i][j] < iter)
-			// || (moveScore[i][j] == maxMoveScore_nonTabu && tabuTable[i][j] < iter &&
-			// randInt(10) > 5)) {
-			// maxMoveScore_nonTabu = moveScore[i][j];
-			// bestMove_v_nonTabu = i;
-			// bestMoveColor_j_nonTabu = j;
-			// flag = 1;
-			// }
-			// }
-			// }
-			// // 并行加速 将二维矩阵四等分并行---------v
-			// CompletableFuture<int[]> task_max1 = CompletableFuture
-			// .supplyAsync(() -> findMax(iter, 1, 1, G.verNum / 2, nbColor / 2));
-			// CompletableFuture<int[]> task_max2 = CompletableFuture
-			// .supplyAsync(() -> findMax(iter, 1, nbColor / 2, G.verNum / 2, nbColor));
-			// CompletableFuture<int[]> task_max3 = CompletableFuture
-			// .supplyAsync(() -> findMax(iter, G.verNum / 2, 1, G.verNum, nbColor / 2));
-			// CompletableFuture<int[]> task_max4 = CompletableFuture.supplyAsync(
-			// () -> findMax(iter, G.verNum / 2, nbColor / 2, G.verNum, nbColor));
-			// CompletableFuture<Void> allMaxTasks = CompletableFuture.allOf(task_max1,
-			// task_max2, task_max3, task_max4);
-			// allMaxTasks.join();
-
-			// int[] dataLs1 = null;
-			// int[] dataLs2 = null;
-			// int[] dataLs3 = null;
-			// int[] dataLs4 = null;
-			// try {
-			// // 获取最佳移动的返回值
-			// dataLs1 = task_max1.get();
-			// dataLs2 = task_max2.get();
-			// dataLs3 = task_max3.get();
-			// dataLs4 = task_max4.get();
-			// } catch (Exception e) {
-			// // System.out.println(e);
-			// }
-
-			// int[] dataLs1_2 = merge(dataLs1, dataLs2);
-			// int[] dataLs3_4 = merge(dataLs3, dataLs4);
-			// dataLs1_2 = merge(dataLs1_2, dataLs3_4);
-			// -----------------^
-
-			// 并行加速 将二维矩阵二等分并行 实验发现四线程和两线程的速度差别不大 相比单线程确有加速
-			// 迭代次数过多，每次开启线程的消耗不小，如果允许，应当在search函数层面实现并行，这样每个线程存在的时间够长不会在创建线程上消耗过多资源
-			// ------------v
-			CompletableFuture<int[]> task_max1 = CompletableFuture
-					.supplyAsync(() -> findMax(iter, 1, 1, G.verNum / 2, nbColor));
-			CompletableFuture<int[]> task_max2 = CompletableFuture
-					.supplyAsync(() -> findMax(iter, G.verNum / 2 + 1, 1, G.verNum, nbColor));
-			CompletableFuture<Void> allMaxTasks = CompletableFuture.allOf(task_max1, task_max2);
-			allMaxTasks.join();
-
-			int[] dataLs1 = null;
-			int[] dataLs2 = null;
-			// int[] dataLs3 = null;
-			// int[] dataLs4 = null;
-			try {
-				// 获取calConflict的返回值
-				dataLs1 = task_max1.get();
-				dataLs2 = task_max2.get();
-				// dataLs3 = task_max3.get();
-				// dataLs4 = task_max4.get();
-			} catch (Exception e) {
-				System.out.println(e);
+			for (int i = start; i < G.verNum + 1; i += step) {
+				// 若当前点已经无冲突
+				if (adj_score[i][best_sol[i]] == 0) {
+					continue;
+				}
+				for (int j = start; j < nbColor + 1; j += step) {
+					// 跳过原地移动，防止无意义的移动
+					if (best_sol[i] == j) {
+						continue;
+					}
+					int moveScore_tmp = this.adj_score[i][best_sol[i]] - this.adj_score[i][j];
+					// 记录所有的分数，找出最大的分数
+					if ((moveScore_tmp > maxMoveScore) || (moveScore_tmp == maxMoveScore &&
+							randInt(10) > 5)) {
+						maxMoveScore = moveScore_tmp;
+						bestMove_v = i;
+						bestMoveColor_j = j;
+						flag = 1;
+					}
+					if ((moveScore_tmp > maxMoveScore_nonTabu && tabuTable[i][j] < iter)
+							|| (moveScore_tmp == maxMoveScore_nonTabu && tabuTable[i][j] < iter &&
+									randInt(10) > 5)) {
+						maxMoveScore_nonTabu = moveScore_tmp;
+						bestMove_v_nonTabu = i;
+						bestMoveColor_j_nonTabu = j;
+						flag = 1;
+					}
+				}
 			}
 
-			int[] dataLs1_2 = merge(dataLs1, dataLs2);
-			// ---------------^
+			// int[] dataLs1_2 = findMax(iter, 1, 1, G.verNum, nbColor);
 
-			// ------------多线程使用，单线程应当注释
-			maxMoveScore = dataLs1_2[0];
-			bestMove_v = dataLs1_2[1];
-			bestMoveColor_j = dataLs1_2[2];
-			maxMoveScore_nonTabu = dataLs1_2[3];
-			bestMove_v_nonTabu = dataLs1_2[4];
-			bestMoveColor_j_nonTabu = dataLs1_2[5];
-			flag = dataLs1_2[6];
-			// -----------
+			// // ------------多线程使用，单线程应当注释
+			// maxMoveScore = dataLs1_2[0];
+			// bestMove_v = dataLs1_2[1];
+			// bestMoveColor_j = dataLs1_2[2];
+			// maxMoveScore_nonTabu = dataLs1_2[3];
+			// bestMove_v_nonTabu = dataLs1_2[4];
+			// bestMoveColor_j_nonTabu = dataLs1_2[5];
+			// flag = dataLs1_2[6];
+			// // -----------
 
 			// // 单线程 -------v
 			// // int max_score = ; // 一次iter 中最大的move-score
@@ -340,9 +281,7 @@ public class TabuColoring {
 				int old_color_nonTabu = best_sol[bestMove_v_nonTabu];
 				// 最佳解不禁忌
 				if (tabuTable[bestMove_v][bestMoveColor_j] < iter) {
-					// int conflictDelta = -moveScore[bestMove_v][bestMoveColor_j];
-					moveScore_tmp =  (this.adj_score[bestMove_v][old_color] - this.adj_score[bestMove_v][bestMoveColor_j]);
-					conflictDelta = -moveScore_tmp;
+					int conflictDelta = -moveScore[bestMove_v][bestMoveColor_j];
 					System.out.println("bestMove: " + bestMove_v + " " + bestMoveColor_j + " " + conflictDelta);
 					move(best_sol, bestMove_v, best_sol[bestMove_v], bestMoveColor_j);
 					assert (best_sol[bestMove_v] == bestMoveColor_j);
@@ -360,9 +299,7 @@ public class TabuColoring {
 					iter++;
 				} else if (moveScore[bestMove_v][bestMoveColor_j] > 0) {
 					// 最佳解禁忌但是move-score为正
-					// int conflictDelta = -moveScore[bestMove_v][bestMoveColor_j];
-					moveScore_tmp =  (this.adj_score[bestMove_v][old_color] - this.adj_score[bestMove_v][bestMoveColor_j]);
-					conflictDelta = -moveScore_tmp;
+					int conflictDelta = -moveScore[bestMove_v][bestMoveColor_j];
 					System.out.println(
 							"bestMove_moveScore>0: " + bestMove_v + " " + bestMoveColor_j + " " + conflictDelta);
 					move(best_sol, bestMove_v, best_sol[bestMove_v], bestMoveColor_j);
@@ -381,9 +318,7 @@ public class TabuColoring {
 					iter++;
 				} else {
 					// 最佳解禁忌且move-score为负，则从非禁忌的移动中选择一个最优的移动
-					// int conflictDelta = -maxMoveScore_nonTabu;
-					moveScore_tmp =  (this.adj_score[bestMove_v_nonTabu][old_color_nonTabu] - this.adj_score[bestMove_v_nonTabu][bestMoveColor_j_nonTabu]);
-					conflictDelta = -moveScore_tmp;
+					int conflictDelta = -maxMoveScore_nonTabu;
 					System.out.println("bestMove_nonTabu: " + bestMove_v_nonTabu + " " + bestMoveColor_j_nonTabu + " "
 							+ conflictDelta);
 					move(best_sol, bestMove_v_nonTabu, best_sol[bestMove_v_nonTabu], bestMoveColor_j_nonTabu);
@@ -420,36 +355,36 @@ public class TabuColoring {
 		// System.out.println(iter);
 		// System.out.println(calConflict(sol_best));
 		// assert (calConflict(best_sol) == 0);
-		System.out.println("con:" +calConflict(best_sol));
+		System.out.println("con:" +
+				calConflict(best_sol));
 		System.out.println("iter-" + iter);
 		// 结束记时并输出时间
 		long endTime = System.currentTimeMillis();
 		long runTime = endTime - startTime;
-		System.out.println("2con: " + conflict);
+		System.out.println("runTime: " + runTime);
 
 		// this.conflict_edges = new int[conflict * 2][2];
 		// int index = 0;
 		// for (int v = 1; v <= G.verNum; v++) {
-		// 	// 一定无冲突
-		// 	if (adj_score[v][best_sol[v]] == 0) {
-		// 		continue;
-		// 	}
-		// 	int color = best_sol[v];
-		// 	for (int neibor : G.getNeighbors(v)) {
-		// 		assert (best_sol[neibor] >= 1 && best_sol[neibor] <= nbColor);
-		// 		if (best_sol[neibor] == color) {
-		// 			// 输出冲突的边
-		// 			System.out.printf("conflict edge: (%d, %d), color: %d\n", v, neibor, color);
-		// 			// 输出sol
-		// 			this.conflict_edges[index][0] = v;
-		// 			this.conflict_edges[index][1] = neibor;
-		// 			index++;
-		// 			// System.out.println(Arrays.toString(sol));
-		// 			System.out.println("failed!");
-		// 		}
-		// 	}
+		// // 一定无冲突
+		// if (adj_score[v][best_sol[v]] == 0) {
+		// continue;
 		// }
-		System.out.println("runTime: " + runTime);
+		// int color = best_sol[v];
+		// for (int neibor : G.getNeighbors(v)) {
+		// assert (best_sol[neibor] >= 1 && best_sol[neibor] <= nbColor);
+		// if (best_sol[neibor] == color) {
+		// // 输出冲突的边
+		// System.out.printf("conflict edge: (%d, %d), color: %d\n", v, neibor, color);
+		// // 输出sol
+		// this.conflict_edges[index][0] = v;
+		// this.conflict_edges[index][1] = neibor;
+		// index++;
+		// // System.out.println(Arrays.toString(sol));
+		// System.out.println("failed!");
+		// }
+		// }
+
 		return best_sol;
 	}
 
@@ -524,32 +459,32 @@ public class TabuColoring {
 		});
 	}
 
-	/**
-	 * 计算移动评分表
-	 * 
-	 * @param sol
-	 */
-	public void calMoveScore(int[] sol, int[][] moveScore2) {
-		int conflict_neighbor_origin = 0;
-		int conflict_neighbor_new = 0;
-		for (int i = 1; i < G.verNum + 1; i++) {
-			for (int color = 1; color < nbColor + 1; color++) {
-				conflict_neighbor_new = 0;
-				conflict_neighbor_origin = 0;
-				// 计算原有冲突数
-				ArrayList<Integer> neighbors = G.getNeighbors(i);
-				for (int v : neighbors) {
-					if (sol[v] == sol[i]) {
-						conflict_neighbor_origin++;
-					}
-					if (sol[v] == color) {
-						conflict_neighbor_new++;
-					}
-				}
-				moveScore2[i][color] = conflict_neighbor_origin - conflict_neighbor_new;
-			}
-		}
-	}
+	// /**
+	// * 计算移动评分表
+	// *
+	// * @param sol
+	// */
+	// public void calMoveScore(int[] sol, int[][] moveScore2) {
+	// int conflict_neighbor_origin = 0;
+	// int conflict_neighbor_new = 0;
+	// for (int i = 1; i < G.verNum + 1; i++) {
+	// for (int color = 1; color < nbColor + 1; color++) {
+	// conflict_neighbor_new = 0;
+	// conflict_neighbor_origin = 0;
+	// // 计算原有冲突数
+	// ArrayList<Integer> neighbors = G.getNeighbors(i);
+	// for (int v : neighbors) {
+	// if (sol[v] == sol[i]) {
+	// conflict_neighbor_origin++;
+	// }
+	// if (sol[v] == color) {
+	// conflict_neighbor_new++;
+	// }
+	// }
+	// moveScore2[i][color] = conflict_neighbor_origin - conflict_neighbor_new;
+	// }
+	// }
+	// }
 
 	/**
 	 * 移动顶点并更新moveScore,sol表
@@ -561,8 +496,6 @@ public class TabuColoring {
 	 * @return 返回冲突数的变化
 	 */
 	public void move(int[] best_sol, int v, int c_i, int c_j) {
-		// 更新范围：v和v的邻居
-		// 更新邻居的moveScore
 		best_sol[v] = c_j;
 
 		// // 更新 adj_score
@@ -571,15 +504,15 @@ public class TabuColoring {
 			this.adj_score[u][c_i]--;
 			this.adj_score[u][c_j]++;
 		}
-		// // 不更新moveScore，因此不一定每个移动都需要算
-		// for (int c = 1; c < nbColor + 1; c++) {
-		// 	moveScore[v][c] = adj_score[v][best_sol[v]] - adj_score[v][c];
-		// }
-		// for (int u : neighbors) {
-		// 	for (int color = 1; color < nbColor + 1; color++) {
-		// 		moveScore[u][color] = adj_score[u][best_sol[u]] - adj_score[u][color];
-		// 	}
-		// }
+		// 更新moveScore
+		for (int c = 1; c < nbColor + 1; c++) {
+			moveScore[v][c] = adj_score[v][best_sol[v]] - adj_score[v][c];
+		}
+		for (int u : neighbors) {
+			for (int color = 1; color < nbColor + 1; color++) {
+				moveScore[u][color] = adj_score[u][best_sol[u]] - adj_score[u][color];
+			}
+		}
 
 		// 这里内部是小循环使用并行反而会降低效率，这里不管是用并行还是普通stream foreach都无法实现加速
 		// ArrayList<Integer> neighbors = G.getNeighbors(v);
@@ -733,5 +666,4 @@ public class TabuColoring {
 		return new int[] { maxMoveScore, bestMove_v, bestMoveColor_j, maxMoveScore_nonTabu, bestMove_v_nonTabu,
 				bestMoveColor_j_nonTabu, flag };
 	}
-
 }

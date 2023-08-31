@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 
-public class sima {
+public class SimaColoring {
     int Size;
     int colorNum;
     ArrayList<int[]> allList = new ArrayList<int[]>();
@@ -14,7 +14,7 @@ public class sima {
 
 
     // 调用g.getNeighbors(i);方法，获得边eage和allList
-    public sima(Graph g, int nbColor) {
+    public SimaColoring(Graph g, int nbColor) {
         this.Size = g.verNum;
         this.colorNum = nbColor;
         ArrayList<Integer> adjList = new ArrayList<>();
