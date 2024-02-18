@@ -79,23 +79,46 @@ using namespace std;
 
 class Solution {
 public:
+
+    // ListNode* reverseList(ListNode* head) {
+    //   if (head == nullptr) {
+    //     return head;
+    //   }
+    //   ListNode* q = head->next;
+    //   ListNode* s = head;
+    //   ListNode* tmp = nullptr;
+    //   s->next = nullptr;
+    //   while (q != nullptr) {
+    //     tmp = s;
+    //     s = q;
+    //     q = q->next;
+    //     s->next = tmp;
+    //   }
+    //   head = s;
+    //   return head;
+    // }
+
+    // recursive
     ListNode* reverseList(ListNode* head) {
       if (head == nullptr) {
         return head;
       }
-      ListNode* q = head->next;
       ListNode* s = head;
-      ListNode* tmp = nullptr;
-      s->next = nullptr;
-      while (q != nullptr) {
-        tmp = s;
-        s = q;
-        q = q->next;
-        s->next = tmp;
-      }
-      head = s;
-      return head;
+      ListNode* q = head->next;
+      head->next = nullptr;
+      return recursiveReverseList(s, q);
     }
+    ListNode* recursiveReverseList(ListNode* s, ListNode* q) {
+      if (q == nullptr) {
+        return s;
+      }
+      ListNode* temp = s;
+      s = q;
+      q = q->next;
+      s->next = temp;
+      return recursiveReverseList(s, q);
+    }
+
 };
 // @lc code=end
 
