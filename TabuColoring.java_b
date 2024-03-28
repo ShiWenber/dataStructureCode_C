@@ -22,7 +22,6 @@ public class TabuColoring {
 	private int[][] moveScore2;
 	private int[] best_sol;
 	private int[][] adj_score;
-	private int iter;
 
 	public TabuColoring(Graph G, int nbColor) {
 		this.G = G;
@@ -31,36 +30,7 @@ public class TabuColoring {
 		this.moveScore = new int[G.verNum + 1][nbColor + 1]; // moveScore[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
 		this.moveScore2 = new int[G.verNum + 1][nbColor + 1]; // moveScore2[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
 		this.best_sol = new int[G.verNum + 1];
-		this.iter = 1;
 		this.adj_score = new int[G.verNum + 1][nbColor + 1];
-				// 初始化随机解
-		for (int i = 1; i < G.verNum + 1; i++) {
-			// 产生从1~nbColor的随机数
-			best_sol[i] = (int) (Math.random() * nbColor) + 1;
-		}
-
-		// 初始化最优解，这样记录最优解的时候方便跟禁忌中找到的局部最优解比较，todo:但是比较耗时
-		// int sol_best[] = sol.clone(); // 是深拷贝？ TODO
-		// int sol_best[] = Arrays.copyOf(sol, sol.length);
-		
-
-		// 初始化禁忌表和移动评分表
-		for (int i = 1; i < G.verNum + 1; i++) {
-			for (int j = 1; j < nbColor + 1; j++) {
-				tabuTable[i][j] = 0;
-				moveScore[i][j] = 0;
-				adj_score[i][j] = 0;
-			}
-		}
-
-		// 初始化移动评分表
-		calMoveScore(best_sol, moveScore);
-		// calMoveScore(best_sol, moveScore2);
-
-		calAdjScore(best_sol);
-
-		// 解评分，仅计算初始化的一次，后面只做增量式更新
-		int conflict = calConflict(best_sol);
 	}
 
 	/**

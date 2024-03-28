@@ -1,3 +1,4 @@
+/**Ant-Q版本 信息素应该被理解为 AQ 信息素是有方向的，但是AQ是没有方向的*/
 package ynu.edu;
 
 
@@ -25,8 +26,8 @@ public class AntTSP {
 
     protected double[][] distMatrix;// 从 1 开始
     protected ArrayList<CityPoint> cities = new ArrayList<CityPoint>(); // 从0开始 第 i 个城市的坐标为 cities.get(i - 1)
-    // 信息素浓度 pheromone[i][j]表示从城市i到城市j的信息素浓度
-    protected double[][] pheromones;
+    // 信息素浓度 aq[i][j]表示从城市i到城市j的收益
+    protected double[][] aqs;
     protected ArrayList<Ant> ants = new ArrayList<Ant>(); // 从0开始 第 i 个蚂蚁的路径为 ants.get(i - 1).tour
     protected Ant bestAnt; // 最优解
 
@@ -40,11 +41,11 @@ public class AntTSP {
     protected int k = 100; // k 次相同的解则停止迭代
     protected double a = 1; // 信息素重要程度
     protected double b = 5; // 启发函数重要程度
-    protected double init_pheromone = 100; // 初始信息素浓度
+    protected double init_aq = 100; // 初始信息素浓度
 
 
     public AntTSP(String filename, int antNum, int maxIter, double q, double rho, int k, double a, double b,
-            double init_pheromone) {
+            double init_aq) {
         this.antNum = antNum;
         this.maxIter = maxIter;
         this.q = q;
@@ -52,7 +53,7 @@ public class AntTSP {
         this.k = k;
         this.a = a;
         this.b = b;
-        this.init_pheromone = init_pheromone;
+        this.init_aq = init_aq;
 
 
 
@@ -106,12 +107,12 @@ public class AntTSP {
         }
         // 初始化信息素浓度
         // System.out.println("distMatrix: " + this.distMatrix + " * " + this.distMatrix[0].length);
-        this.pheromones = new double[nbCities + 1][nbCities + 1];
+        this.aqs = new double[nbCities + 1][nbCities + 1];
         for (int i = 1; i <= nbCities; i++) {
             for (int j = i + 1; j <= nbCities; j++) {
                 // 信息素初始化浓度为1
-                this.pheromones[i][j] = this.init_pheromone;
-                this.pheromones[j][i] = this.pheromones[i][j];
+                this.aqs[i][j] = this.init_aq;
+                this.aqs[j][i] = this.aqs[i][j];
             }
         }
 //        for (int i = 0; i < antNum; i++) {
@@ -130,7 +131,7 @@ public class AntTSP {
 //        总时间
         long whole_startTime = System.currentTimeMillis();
 //        根据超参生成log_name
-        String log_name = "log_" + "antNum-" + this.antNum + "_maxIter-" + this.maxIter + "_q-" + this.q + "_rho-" + this.rho + "_k-" + this.k + "_a-" + this.a + "_b-" + this.b + "_initP" + this.init_pheromone + ".csv";
+        String log_name = "log_" + "antNum-" + this.antNum + "_maxIter-" + this.maxIter + "_q-" + this.q + "_rho-" + this.rho + "_k-" + this.k + "_a-" + this.a + "_b-" + this.b + "_initP" + this.init_aq + ".csv";
         System.out.println("log_name: " + log_name);
 //        记录日志文件 log.csv
 
@@ -146,8 +147,8 @@ public class AntTSP {
         for (int i = 1; i <= nbCities; i++) {
             for (int j = i + 1; j <= nbCities; j++) {
                 // 信息素初始化浓度为
-                this.pheromones[i][j] = this.init_pheromone;
-                this.pheromones[j][i] = this.pheromones[i][j];
+                this.aqs[i][j] = this.init_aq;
+                this.aqs[j][i] = this.aqs[i][j];
             }
         }
         // TODO: implement the ant colony optimization algorithm to find the best tour
@@ -198,9 +199,9 @@ public class AntTSP {
                 // IntStream.range(0, ynu.edu.AntTSP.this.nbCities).forEach(i -> {
 //                不必计算最后一个节点，最后一个点必然选择
                 for (int i = 0; i < AntTSP.this.nbCities; i++) {
-//                    ant.updateNextCityProbabilities(AntTSP.this.distMatrix, AntTSP.this.pheromones, this.a, this.b);
-//                    ant.chooseNextCity(this.pheromones, this.distMatrix);
-                    ant.move1step(this.pheromones, this.distMatrix, this.a, this.b);
+//                    ant.updateNextCityProbabilities(AntTSP.this.distMatrix, AntTSP.this.aqs, this.a, this.b);
+//                    ant.chooseNextCity(this.aqs, this.distMatrix);
+                    ant.move1step(this.aqs, this.distMatrix, this.a, this.b);
 //                    System.out.println("ant_visitedCityIds: " + ant.visitedCityIds.size());
                 }
 
@@ -233,7 +234,7 @@ public class AntTSP {
 //            System.out.println(count + "bestPathLength: " + tempBestAnt.getPathLength());
 
             // 更新信息素浓度矩阵;
-            updatePheromone();
+            updateaq();
 
 
             // ⑷判断是否达到停止条件，若达到则输出最优解，否则返回⑵;
@@ -277,11 +278,11 @@ public class AntTSP {
     /**
      * 更新信息素浓度矩阵
      */
-    private void updatePheromone() {
+    private void updateaq() {
         IntStream.range(0, nbCities).parallel().forEach(i -> {
             IntStream.range(0, nbCities).parallel().forEach(j -> {
-                AntTSP.this.pheromones[i][j] = rho * AntTSP.this.pheromones[i][j];
-//                AntTSP.this.pheromones[j][i] = AntTSP.this.pheromones[i][j];
+                AntTSP.this.aqs[i][j] = rho * AntTSP.this.aqs[i][j];
+//                AntTSP.this.aqs[j][i] = AntTSP.this.aqs[i][j];
             });
         });
         // IntStream.range(0, antNum).parallel().forEach(i -> {
@@ -293,7 +294,7 @@ public class AntTSP {
             // antStream.forEach(i -> {
 //        for (Ant i : this.ants) {
             // 信息素增加强度
-            double res[][] = i.getDeltaPheromones(this.distMatrix);
+            double res[][] = i.getDeltaaqs(this.distMatrix);
             // double deltaP = res[0];
             // int from = (int)res[1];
             // int to = (int)res[2];
@@ -303,16 +304,16 @@ public class AntTSP {
                 int to = (int) res[j][1];
                 double deltaP = res[j][2];
                 // 每只蚂蚁都找到完全路径后再更新信息素浓度矩阵
-                AntTSP.this.pheromones[from][to] += deltaP;
-//                AntTSP.this.pheromones[to][from] = AntTSP.this.pheromones[from][to];
+                AntTSP.this.aqs[from][to] += deltaP;
+//                AntTSP.this.aqs[to][from] = AntTSP.this.aqs[from][to];
 //            });
             }
 //        }
         });
     }
 
-    private class PheromoneMatrix {
-        // TODO: define the pheromone matrix class and its behavior
+    private class aqMatrix {
+        // TODO: define the aq matrix class and its behavior
     }
 
     private void buildDistMatrix(double[][] distMatrix, String filename) {
@@ -406,7 +407,7 @@ public class AntTSP {
             this.visitedCityIds.add(startCityId);
         }
 
-        public void updateNextCityProbabilities(double[][] distMatrix, double[][] pheromone, double alpha, double beta) {
+        public void updateNextCityProbabilities(double[][] distMatrix, double[][] aq, double alpha, double beta) {
             if (this.visitedCityIds.size() == nbCities || this.visitedCityIds.size() == nbCities - 1) {
                 return;
             }
@@ -416,7 +417,7 @@ public class AntTSP {
             for (int i = 1; i < nbCities + 1; i++) {
                 if (!visitedCityIds.contains(i)) {
 //                    最后一个点
-                    // probabilities[i] = Math.pow(ynu.edu.AntTSP.this.pheromones[currentCityId][i],
+                    // probabilities[i] = Math.pow(ynu.edu.AntTSP.this.aqs[currentCityId][i],
                     // ynu.edu.AntTSP.this.a) *
                     // Math.pow(1.0 /ynu.edu.AntTSP.this.distMatrix[currentCityId][i], ynu.edu.AntTSP.this.b);
                     double dist = distMatrix[currentCityId][i];
@@ -424,7 +425,7 @@ public class AntTSP {
                         dist = 1e-7;
                     }
                     assert dist != 0.0; // a280.tsp 有两个城市坐标相同,171 和 172 因此可能出现除0错误，必须检查并在初始化时处理为一个很小的数
-                    this.nextCityProbabilities[i] = Math.pow(pheromones[currentCityId][i], alpha) *
+                    this.nextCityProbabilities[i] = Math.pow(aqs[currentCityId][i], alpha) *
                             Math.pow(1.0 / dist, beta);
                     assert Double.isInfinite(this.nextCityProbabilities[i]) == false;
                     assert Double.isNaN(this.nextCityProbabilities[i]) == false;
@@ -433,7 +434,7 @@ public class AntTSP {
                         this.nextCityProbabilities[i] = 1e-7;
                     }
                     assert this.nextCityProbabilities[i] > 0.0 : "nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
-                            "pheromones: " + Arrays.toString(pheromones[currentCityId]) + "\n" +
+                            "aqs: " + Arrays.toString(aqs[currentCityId]) + "\n" +
                             "currentCityId: " + currentCityId + "\n" +
                             "visitedCityIds: " + visitedCityIds.size() + "\n";
                     total += this.nextCityProbabilities[i];
@@ -446,7 +447,7 @@ public class AntTSP {
 //                return;
 //            }
             assert total != 0.0 : "nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities) + "\n" +
-                    "pheromones: " + Arrays.toString(pheromones[currentCityId]) + "\n" +
+                    "aqs: " + Arrays.toString(aqs[currentCityId]) + "\n" +
                     "currentCityId: " + currentCityId + "\n" +
                     "visitedCityIds: " + visitedCityIds.size() + "\n";
 
@@ -460,14 +461,14 @@ public class AntTSP {
         /**
          * 问题：有可能没有移动，问题出现的原因，nextCityProbabilities[i] = NaN nextCityProbabilities中出现了NaN
          *
-         * @param pheromones
+         * @param aqs
          * @param distances
          */
-        public void chooseNextCity(double[][] pheromones, double[][] distances) {
+        public void chooseNextCity(double[][] aqs, double[][] distances) {
             int moved = 0;
             // 从外部类获取nbCities
             // int nbCities = ynu.edu.AntTSP.this.nbCities;
-            int nbCities = pheromones.length - 1;
+            int nbCities = aqs.length - 1;
             if (this.visitedCityIds.size() == nbCities) {
                 this.lastCityId = this.currentCityId;
                 this.currentCityId = this.visitedCityIds.get(0);
@@ -522,10 +523,10 @@ public class AntTSP {
             assert moved == 1 : "k " + k + " size " + this.visitedCityIds.size() + " nextCityProbabilities: " + Arrays.toString(this.nextCityProbabilities);
         }
 
-        public void move1step(double[][] pheromones, double[][] distMatrix, double alpha, double beta) {
+        public void move1step(double[][] aqs, double[][] distMatrix, double alpha, double beta) {
             int temp = this.visitedCityIds.size();
-            updateNextCityProbabilities(distMatrix, pheromones, alpha, beta);
-            chooseNextCity(pheromones, distMatrix);
+            updateNextCityProbabilities(distMatrix, aqs, alpha, beta);
+            chooseNextCity(aqs, distMatrix);
 //            assert temp + 1 == this.visitedCityIds.size() : "temp: " + temp + ", visitedCityIds.size(): " + this.visitedCityIds.size();
         }
 
@@ -542,29 +543,29 @@ public class AntTSP {
         }
 
         /**
-         * 输出 deltaPheromones，以及该段路径的起点城市编号，终点城市编号
+         * 输出 deltaaqs，以及该段路径的起点城市编号，终点城市编号
          * 注意使用的路径长度是蚂蚁一次迭代完成后的路径长度
          *
          * @param distances
-         * @return [startCityId, endCityId, deltaPheromones] * (nbCities - 1)
+         * @return [startCityId, endCityId, deltaaqs] * (nbCities - 1)
          */
-        public double[][] getDeltaPheromones(double[][] distances) {
+        public double[][] getDeltaaqs(double[][] distances) {
             assert visitedCityIds.size() == nbCities;
-            // 设置三维的deltaPheromones数组
-            double[][] deltaPheromones = new double[visitedCityIds.size()][3];
+            // 设置三维的deltaaqs数组
+            double[][] deltaaqs = new double[visitedCityIds.size()][3];
             // 遍历蚂蚁访问过的城市
             IntStream.range(0, visitedCityIds.size() - 1).forEach(i -> {
                 int startCityId = visitedCityIds.get(i);
                 int endCityId = visitedCityIds.get(i + 1);
-                deltaPheromones[i][0] = startCityId;
-                deltaPheromones[i][1] = endCityId;
-                deltaPheromones[i][2] = AntTSP.this.q / pathLength;
+                deltaaqs[i][0] = startCityId;
+                deltaaqs[i][1] = endCityId;
+                deltaaqs[i][2] = AntTSP.this.q / pathLength;
             });
             // 获得最后一行的信息素浓度
-            deltaPheromones[visitedCityIds.size() - 1][0] = visitedCityIds.get(visitedCityIds.size() - 1);
-            deltaPheromones[visitedCityIds.size() - 1][1] = visitedCityIds.get(0);
-            deltaPheromones[visitedCityIds.size() - 1][2] = AntTSP.this.q / pathLength;
-            return deltaPheromones;
+            deltaaqs[visitedCityIds.size() - 1][0] = visitedCityIds.get(visitedCityIds.size() - 1);
+            deltaaqs[visitedCityIds.size() - 1][1] = visitedCityIds.get(0);
+            deltaaqs[visitedCityIds.size() - 1][2] = AntTSP.this.q / pathLength;
+            return deltaaqs;
         }
 
         public ArrayList<Integer> getVisitedCityIds() {

@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.SimpleFileVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Vector;
 import java.util.stream.IntStream;
 
@@ -23,26 +26,26 @@ public class TabuColoring {
 	private int[] best_sol;
 	private int[][] adj_score;
 	private int iter;
+	private int[][] conflict_edges;
 
 	public TabuColoring(Graph G, int nbColor) {
 		this.G = G;
-		this.nbColor = nbColor;
-		this.tabuTable = new int[G.verNum + 1][nbColor + 1];
-		this.moveScore = new int[G.verNum + 1][nbColor + 1]; // moveScore[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
-		this.moveScore2 = new int[G.verNum + 1][nbColor + 1]; // moveScore2[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
+		this.nbColor = 52;
+		this.tabuTable = new int[G.verNum + 1][this.nbColor + 1];
+		this.moveScore = new int[G.verNum + 1][this.nbColor + 1]; // moveScore[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
+		this.moveScore2 = new int[G.verNum + 1][this.nbColor + 1]; // moveScore2[i][j] 表示顶点i的颜色变为j时的分数，分数越大越好
 		this.best_sol = new int[G.verNum + 1];
 		this.iter = 1;
-		this.adj_score = new int[G.verNum + 1][nbColor + 1];
-				// 初始化随机解
+		this.adj_score = new int[G.verNum + 1][this.nbColor + 1];
+		// 初始化随机解
 		for (int i = 1; i < G.verNum + 1; i++) {
 			// 产生从1~nbColor的随机数
-			best_sol[i] = (int) (Math.random() * nbColor) + 1;
+			best_sol[i] = (int) (Math.random() * this.nbColor) + 1;
 		}
 
 		// 初始化最优解，这样记录最优解的时候方便跟禁忌中找到的局部最优解比较，todo:但是比较耗时
 		// int sol_best[] = sol.clone(); // 是深拷贝？ TODO
 		// int sol_best[] = Arrays.copyOf(sol, sol.length);
-		
 
 		// 初始化禁忌表和移动评分表
 		for (int i = 1; i < G.verNum + 1; i++) {
@@ -70,26 +73,36 @@ public class TabuColoring {
 	 */
 	public int[] search() {
 		long startTime = System.currentTimeMillis();
-		// 初始化随机解
-		for (int i = 1; i < G.verNum + 1; i++) {
-			// 产生从1~nbColor的随机数
-			best_sol[i] = (int) (Math.random() * nbColor) + 1;
-		}
-
-		// 初始化最优解，这样记录最优解的时候方便跟禁忌中找到的局部最优解比较，todo:但是比较耗时
-		// int sol_best[] = sol.clone(); // 是深拷贝？ TODO
-		// int sol_best[] = Arrays.copyOf(sol, sol.length);
-		
-
-		// 初始化禁忌表和移动评分表
-		for (int i = 1; i < G.verNum + 1; i++) {
-			for (int j = 1; j < nbColor + 1; j++) {
-				tabuTable[i][j] = 0;
-				moveScore[i][j] = 0;
-				adj_score[i][j] = 0;
+		// 改变conflict_edges[0]和conflict_edges[1]的颜色，跳出局部最优解
+		// // 遍历conflict_edges
+		if (conflict_edges != null) {
+			for (int i = 0; i < conflict_edges.length; i++) {
+				// 冲突边有重复只需要随机改变一个顶点的颜色即可
+				best_sol[conflict_edges[i][0]] = (int) (Math.random() * nbColor) + 1;
+				// best_sol[conflict_edges[i][1]] = (int) (Math.random() * nbColor) + 1;
 			}
 		}
 
+		// 随机挑选50%的节点，随机改变颜色，当该比例为1的时候，相当于退化为随机初始化
+		Random random = new Random();
+		Set<Integer> set = new HashSet<>();
+		while (set.size() < G.verNum * 0.20) {
+			set.add(random.nextInt(G.verNum) + 1);
+		}
+		int[] idx = set.stream().mapToInt(Integer::valueOf).toArray();
+		// 随机改变颜色
+		for (int i = 0; i < idx.length; i++) {
+			best_sol[idx[i]] = (int) (Math.random() * nbColor) + 1;
+		}
+
+		// stream.parallel() 并行流加速
+		IntStream.range(1, G.verNum + 1).parallel().forEach(i -> {
+			IntStream.range(1, nbColor + 1).parallel().forEach(j -> {
+				tabuTable[i][j] = 0;
+				moveScore[i][j] = 0;
+				adj_score[i][j] = 0;
+			});
+		});
 		// 初始化移动评分表
 		calMoveScore(best_sol, moveScore);
 		// calMoveScore(best_sol, moveScore2);
@@ -99,13 +112,17 @@ public class TabuColoring {
 		// 解评分，仅计算初始化的一次，后面只做增量式更新
 		int conflict = calConflict(best_sol);
 
-		int iter = 1; // 迭代次数
-		int max_iter = 200000; // 最大迭代次数
-		int randIdx = 1000; // 禁忌表中随机选择的禁忌次数
+		iter = 1; // 迭代次数
+		int max_iter = 500000; // 最大迭代次数
+		int randIdx = 50; // 禁忌表中随机选择的禁忌次数
 		int sm_randIdx = 500; // 禁忌表中随机选择的禁忌次数
 		// 注意一个iter才更新一次sol，且只有比sol_best好的才更新sol_best
 		while (conflict > 0 && iter < max_iter) {
-			int tt = iter + (int)(1.0 /conflict * randIdx * 10) + randInt(sm_randIdx);
+			// int tt = iter + (int) (1.0 / conflict * randInt(randIdx)) + randInt(sm_randIdx);
+			// int tt = iter + (int) (iter * (randInt(10) / 10.0)) + randInt(sm_randIdx);
+			// int tt = iter + randInt(sm_randIdx) * (max_iter - iter) / max_iter;
+			// + (int) (1.0 / conflict * randInt(randIdx))
+			int tt = iter + conflict + randInt(sm_randIdx);
 
 			System.out.println("conflict: " + conflict);
 			// // 输出轮数
@@ -125,7 +142,12 @@ public class TabuColoring {
 
 			// int max_score = ; // 一次iter 中最大的move-score
 			for (int i = 1; i < G.verNum + 1; i++) {
+				// 若当前点已经无冲突
+				if (adj_score[i][best_sol[i]] == 0) {
+					continue;
+				}
 				for (int j = 1; j < nbColor + 1; j++) {
+
 					// 从不禁忌的移动中选择第一个能优化当前解的
 					if (tabuTable[i][j] >= iter && moveScore[i][j] > 0) {
 						int conflictDelta = -moveScore[i][j];
@@ -171,7 +193,7 @@ public class TabuColoring {
 			}
 			// 非禁忌的移动中，找到一个最优的移动
 			if (flag == 1) {
-				int conflictDelta = - moveScore[bestMove_v][bestMoveColor_j];
+				int conflictDelta = -moveScore[bestMove_v][bestMoveColor_j];
 				System.out.println("bestMove: " + bestMove_v + " " + bestMoveColor_j + " " + conflictDelta);
 				tabuTable[bestMove_v][best_sol[bestMove_v]] = tt;
 				move(best_sol, bestMove_v, best_sol[bestMove_v], bestMoveColor_j);
@@ -208,6 +230,26 @@ public class TabuColoring {
 		long runTime = endTime - startTime;
 		System.out.println("runTime: " + runTime);
 		System.out.println("con:" + calConflict(best_sol));
+		System.out.println("2con: " + conflict);
+
+		this.conflict_edges = new int[conflict * 2][2];
+		int index = 0;
+		for (int v = 1; v <= G.verNum; v++) {
+			int color = best_sol[v];
+			for (int neibor : G.getNeighbors(v)) {
+				assert (best_sol[neibor] >= 1 && best_sol[neibor] <= nbColor);
+				if (best_sol[neibor] == color) {
+					// 输出冲突的边
+					System.out.printf("conflict edge: (%d, %d), color: %d\n", v, neibor, color);
+					// 输出sol
+					this.conflict_edges[index][0] = v;
+					this.conflict_edges[index][1] = neibor;
+					index++;
+					// System.out.println(Arrays.toString(sol));
+					System.out.println("failed!");
+				}
+			}
+		}
 		return best_sol;
 	}
 
@@ -323,12 +365,12 @@ public class TabuColoring {
 		}
 	}
 
-
 	/**
 	 * 对比两个二维数组，查看数据是否一致
+	 * 
 	 * @param moveScore
 	 * @param moveScore2
-	 * @return 
+	 * @return
 	 */
 	public boolean equal_array(int[][] moveScore, int[][] moveScore2) {
 		for (int i = 1; i < G.verNum + 1; i++) {
