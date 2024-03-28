@@ -21,7 +21,7 @@ class Graph {
   int vertex_num;  //< 顶点数
   int edge_num;    //< 边数
   NdArray<T> adj; //< 邻接矩阵
-  T* pre;         //< 前趋顶点数组，为函数pre提供临时空间
+  T* pre;         //< 前趋顶点数组，为函数get_pre提供临时空间
  public:
   ~Graph();
   Graph(NdArray<T> &arr);

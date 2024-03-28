@@ -303,9 +303,10 @@ public class AntTSP {
                 int from = (int) res[j][0];
                 int to = (int) res[j][1];
                 double deltaP = res[j][2];
-                // 每只蚂蚁都找到完全路径后再更新信息素浓度矩阵
-                AntTSP.this.aqs[from][to] += deltaP;
-//                AntTSP.this.aqs[to][from] = AntTSP.this.aqs[from][to];
+                // 每只蚂蚁都找到完全路径后再更新信息素浓度矩阵 对称方式 和 单向方式
+                AntTSP.this.pheromones[from][to] += deltaP;
+                AntTSP.this.pheromones[to][from] += deltaP;
+//                AntTSP.this.pheromones[to][from] = AntTSP.this.pheromones[from][to];
 //            });
             }
 //        }

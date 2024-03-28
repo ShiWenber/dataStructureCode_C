@@ -119,98 +119,98 @@ T shorted_path(Graph<T> &g, T *&cost, int *&next, int *&p, int s, int t) {
   return cost[s];
 }
 
-int main() {
-  // test-NdArray------------
-  /**构造二维3x4的int类型数据对象，初始化为0*/
-  // NdArray<int> arr(0, 2, 3, 4);
-  // cout << arr.to_string() << endl;
-  // arr.assign(1, 0, 0);
-  // cout << arr.to_string() << endl;
-  // int temp = arr.at(2, 0, 0);
-  // cout << temp << endl;
-  // arr.assign_all(2);
-  // cout << arr.to_string() << endl;
-  // NdArray<int> arr2(arr);
-  // cout << arr2.to_string() << endl;
+// int main() {
+//   // test-NdArray------------
+//   /**构造二维3x4的int类型数据对象，初始化为0*/
+//   // NdArray<int> arr(0, 2, 3, 4);
+//   // cout << arr.to_string() << endl;
+//   // arr.assign(1, 0, 0);
+//   // cout << arr.to_string() << endl;
+//   // int temp = arr.at(2, 0, 0);
+//   // cout << temp << endl;
+//   // arr.assign_all(2);
+//   // cout << arr.to_string() << endl;
+//   // NdArray<int> arr2(arr);
+//   // cout << arr2.to_string() << endl;
 
-  // arr.~NdArray();
-  // arr2.~NdArray();
-  // test-Graph------------
-  // NdArray<int> c(0, 2, 13, 13);
-  // Graph<int> g(c);
-  // cout << g.get_adj().to_string() << endl;
-  // c.assign(1, 0, 1);
-  // cout << c.to_string() << endl;
-  // g.set_adj(c);
-  // cout << g.get_adj().to_string() << endl;
-  // Graph<int>
-  // g2("E:\\pros\\dataStructureCode_C\\dataStructureCode_C\\dp\\bag01\\graph.csv",
-  // c); cout << g2.get_adj().to_string() << endl;
-  // int * pre = g2.get_pre(12);
-  // for (int i = 1; i <= pre[0]; i++) {
-  //   cout << pre[i] << " ";
-  // }
-  // ------------
+//   // arr.~NdArray();
+//   // arr2.~NdArray();
+//   // test-Graph------------
+//   // NdArray<int> c(0, 2, 13, 13);
+//   // Graph<int> g(c);
+//   // cout << g.get_adj().to_string() << endl;
+//   // c.assign(1, 0, 1);
+//   // cout << c.to_string() << endl;
+//   // g.set_adj(c);
+//   // cout << g.get_adj().to_string() << endl;
+//   // Graph<int>
+//   // g2("E:\\pros\\dataStructureCode_C\\dataStructureCode_C\\dp\\bag01\\graph.csv",
+//   // c); cout << g2.get_adj().to_string() << endl;
+//   // int * pre = g2.get_pre(12);
+//   // for (int i = 1; i <= pre[0]; i++) {
+//   //   cout << pre[i] << " ";
+//   // }
+//   // ------------
 
-  int *cost = nullptr;
-  int *next = nullptr;
-  int *p = nullptr;
-  /**代价矩阵(二维矩阵结构)*/
-  NdArray<int> c(0, 2, 13, 13);
-  Graph<int> g(
-      "E:\\pros\\dataStructureCode_C\\dataStructureCode_C\\dp\\bag01\\graph."
-      "csv",
-      c);
+//   int *cost = nullptr;
+//   int *next = nullptr;
+//   int *p = nullptr;
+//   /**代价矩阵(二维矩阵结构)*/
+//   NdArray<int> c(0, 2, 13, 13);
+//   Graph<int> g(
+//       "E:\\pros\\dataStructureCode_C\\dataStructureCode_C\\dp\\bag01\\graph."
+//       "csv",
+//       c);
 
-  system_clock::time_point start = system_clock::now();
-  // shorted_path(g, cost, next, p, 1, 12);
-  // int len = shorted_path(g, cost, next, p, 1, 3);
-  int len = shorted_path(g, cost, next, p, 4, 10);
-  system_clock::time_point end = system_clock::now();
-  cout << "time: " << duration_cast<microseconds>(end - start).count() / 1e6
-       << "s" << endl;
-  cout << "len: " << len << endl;
+//   system_clock::time_point start = system_clock::now();
+//   // shorted_path(g, cost, next, p, 1, 12);
+//   // int len = shorted_path(g, cost, next, p, 1, 3);
+//   int len = shorted_path(g, cost, next, p, 4, 10);
+//   system_clock::time_point end = system_clock::now();
+//   cout << "time: " << duration_cast<microseconds>(end - start).count() / 1e6
+//        << "s" << endl;
+//   cout << "len: " << len << endl;
 
-  cout << "cost:" << cost[0] << "| ";
-  for (int i = 1; i <= 12; i++) {
-    cout << cost[i] << " ";
-  }
-  cout << endl << "next:" << next[0] << "| ";
-  for (int i = 1; i <= 12; i++) {
-    cout << next[i] << " ";
-  }
-  cout << endl << "p:" << p[0] << "| ";
-  for (int i = 1; i <= 12; i++) {
-    cout << p[i] << " ";
-  }
-  /**随机种子*/
-  srand((unsigned)time(NULL));
-  /**随机选择起点和终点*/
-  for (int i = 0; i < 10; i++) {
-    int s = rand() % 12 + 1;
-    int t = rand() % 12 + 1;
-    cout << endl << "s:" << s << " t:" << t << endl;
-    system_clock::time_point start2 = system_clock::now();
-    int len = shorted_path(g, cost, next, p, s, t);
-    system_clock::time_point end2 = system_clock::now();
-    cout << "time: " << duration_cast<microseconds>(end2 - start2).count() / 1e6
-         << "s" << endl;
-    cout << "len: " << len << endl;
+//   cout << "cost:" << cost[0] << "| ";
+//   for (int i = 1; i <= 12; i++) {
+//     cout << cost[i] << " ";
+//   }
+//   cout << endl << "next:" << next[0] << "| ";
+//   for (int i = 1; i <= 12; i++) {
+//     cout << next[i] << " ";
+//   }
+//   cout << endl << "p:" << p[0] << "| ";
+//   for (int i = 1; i <= 12; i++) {
+//     cout << p[i] << " ";
+//   }
+//   /**随机种子*/
+//   srand((unsigned)time(NULL));
+//   /**随机选择起点和终点*/
+//   for (int i = 0; i < 10; i++) {
+//     int s = rand() % 12 + 1;
+//     int t = rand() % 12 + 1;
+//     cout << endl << "s:" << s << " t:" << t << endl;
+//     system_clock::time_point start2 = system_clock::now();
+//     int len = shorted_path(g, cost, next, p, s, t);
+//     system_clock::time_point end2 = system_clock::now();
+//     cout << "time: " << duration_cast<microseconds>(end2 - start2).count() / 1e6
+//          << "s" << endl;
+//     cout << "len: " << len << endl;
 
-    cout << "cost:" << cost[0] << "| ";
-    for (int i = 1; i <= 12; i++) {
-      cout << cost[i] << " ";
-    }
-    cout << endl << "next:" << next[0] << "| ";
-    for (int i = 1; i <= 12; i++) {
-      cout << next[i] << " ";
-    }
-    cout << endl << "p:" << p[0] << "| ";
-    for (int i = 1; i <= 12; i++) {
-      cout << p[i] << " ";
-    }
-    cout << endl << "---------------------------------" << endl;
-  }
+//     cout << "cost:" << cost[0] << "| ";
+//     for (int i = 1; i <= 12; i++) {
+//       cout << cost[i] << " ";
+//     }
+//     cout << endl << "next:" << next[0] << "| ";
+//     for (int i = 1; i <= 12; i++) {
+//       cout << next[i] << " ";
+//     }
+//     cout << endl << "p:" << p[0] << "| ";
+//     for (int i = 1; i <= 12; i++) {
+//       cout << p[i] << " ";
+//     }
+//     cout << endl << "---------------------------------" << endl;
+//   }
   
-  return 0;
-}
+//   return 0;
+// }
